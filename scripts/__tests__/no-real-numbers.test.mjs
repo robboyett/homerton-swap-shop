@@ -10,13 +10,13 @@ describe("no-real-numbers", () => {
   });
 
   it("blocks a number outside the range", () => {
-    expect(findRealNumber("priya: 07911 123456")).toEqual({ line: 1, found: "07911 123456" });
-    expect(findRealNumber("priya: +447911123456")?.found).toBe("+447911123456");
-    expect(findRealNumber("sam: 07700 800123")?.found).toBe("07700 800123");
+    expect(findRealNumber("priya: 07000 000000")).toEqual({ line: 1, found: "07000 000000" });
+    expect(findRealNumber("priya: +447000000000")?.found).toBe("+447000000000");
+    expect(findRealNumber("sam: 07000 000123")?.found).toBe("07000 000123");
   });
 
   it("reports the line it found it on", () => {
-    expect(findRealNumber("one\ntwo\n07911123456\n")?.line).toBe(3);
+    expect(findRealNumber("one\ntwo\n07000000000\n")?.line).toBe(3);
   });
 
   it("does not trip on ISBNs, hashes or long digit runs", () => {
@@ -24,9 +24,13 @@ describe("no-real-numbers", () => {
     expect(findRealNumber("isbn 0747532699")).toBeNull();
     expect(findRealNumber("isbn: 978-0-7475-3269-9")).toBeNull();
     expect(findRealNumber("id 07700900123456789")).toBeNull();
-    expect(findRealNumber("sha 4f07911123456abc")).toBeNull();
+    expect(findRealNumber("sha 4f07000000000abc")).toBeNull();
   });
 
+  // The two near-misses below sit either side of the reserved block and exist only to prove the
+  // predicate's edges. Everything else in this file uses 070 personal numbering, all zeros, which
+  // is never allocated to a subscriber: an out-of-range number has to appear here by definition,
+  // so it should at least be one that cannot belong to anyone (ADR 0005).
   it("knows the range boundaries", () => {
     expect(isDramaNumber("07700900000")).toBe(true);
     expect(isDramaNumber("07700900999")).toBe(true);
@@ -38,14 +42,14 @@ describe("no-real-numbers", () => {
 
 describe("no-real-numbers boundaries", () => {
   it("still finds a number next to punctuation and markup", () => {
-    expect(findRealNumber("tel:07911123456")?.found).toBe("07911123456");
-    expect(findRealNumber("https://wa.me/447911123456")?.found).toBe("447911123456");
-    expect(findRealNumber("<span>07911 123456</span>")?.found).toBe("07911 123456");
-    expect(findRealNumber('{"whatsapp":"+447911123456"}')?.found).toBe("+447911123456");
+    expect(findRealNumber("tel:07000000000")?.found).toBe("07000000000");
+    expect(findRealNumber("https://wa.me/447000000000")?.found).toBe("447000000000");
+    expect(findRealNumber("<span>07000 000000</span>")?.found).toBe("07000 000000");
+    expect(findRealNumber('{"whatsapp":"+447000000000"}')?.found).toBe("+447000000000");
   });
 
   it("stays out of alphanumeric tokens", () => {
-    expect(findRealNumber("sha512-4f07911123456abc")).toBeNull();
-    expect(findRealNumber("integrity: a07911123456z")).toBeNull();
+    expect(findRealNumber("sha512-4f07000000000abc")).toBeNull();
+    expect(findRealNumber("integrity: a07000000000z")).toBeNull();
   });
 });
