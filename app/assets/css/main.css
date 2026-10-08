@@ -510,6 +510,33 @@ button {
   gap: 4px 16px;
 }
 
+/* ---- the admin screen: everyone, one per line ---- */
+
+.admin {
+  max-width: 480px;
+}
+
+/* The message to copy, boxed like a field so it reads as a thing, not a sentence. */
+.handover {
+  padding: 12px 14px;
+  border: 1px solid var(--ink);
+  user-select: all;
+}
+
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 16px;
+  padding: 4px 0;
+}
+
 /* ---- how it works ---- */
 
 .explain {

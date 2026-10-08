@@ -199,3 +199,15 @@ export function bookIsbnFromBarcode(text: string): string | null {
   const digits = text.replace(/\D/g, "");
   return /^97[89]\d{10}$/.test(digits) ? digits : null;
 }
+
+/**
+ * A member as the admin screen lists them. The email is here because Rob typed it in and needs
+ * it to tell two Priyas apart; it goes to the admin screen and nowhere else (ADR 0009, amended).
+ */
+export const memberSchema = meSchema.extend({
+  invited_by_first_name: z.string().nullable(),
+});
+
+export const newPasswordSchema = z.object({ password: newProfileSchema.shape.password });
+
+export type Member = z.infer<typeof memberSchema>;

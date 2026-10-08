@@ -4,8 +4,9 @@
  * Everything returned from this file is the browser shape from shared/schema.ts, never a row:
  * the row carries a password hash and other people's emails, and neither leaves this folder.
  */
-import { eq } from "drizzle-orm";
-import type { Me, NewProfile } from "../../shared/schema";
+import { asc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
+import type { Me, Member, NewProfile } from "../../shared/schema";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { profiles } from "./db/schema";
 import type { Db } from "./db/types";
@@ -16,6 +17,20 @@ export function normaliseEmail(email: string): string {
 }
 
 type Row = typeof profiles.$inferSelect;
+
+/** Thrown by createProfile when the email already has an account. The route turns it into a 409. */
+export class EmailTakenError extends Error {
+  constructor() {
+    super("that email already has an account");
+    this.name = "EmailTakenError";
+  }
+}
+
+/** Postgres unique_violation, whichever driver wrapped it. */
+function isUniqueViolation(e: unknown): boolean {
+  const err = e as { code?: string; cause?: { code?: string } };
+  return err?.code === "23505" || err?.cause?.code === "23505";
+}
 
 function asMe(row: Row): Me {
   return { id: row.id, first_name: row.firstName, is_admin: row.isAdmin, email: row.email };
@@ -53,17 +68,23 @@ export async function createProfile(
   profile: NewProfile,
   options: { invitedBy: string | null; isAdmin?: boolean },
 ): Promise<Me> {
-  const rows = await db
-    .insert(profiles)
-    .values({
-      email: normaliseEmail(profile.email),
-      firstName: profile.first_name.trim(),
-      whatsappNumber: profile.whatsapp_number,
-      passwordHash: await hashPassword(profile.password),
-      isAdmin: options.isAdmin ?? false,
-      invitedBy: options.invitedBy,
-    })
-    .returning();
+  let rows: Row[];
+  try {
+    rows = await db
+      .insert(profiles)
+      .values({
+        email: normaliseEmail(profile.email),
+        firstName: profile.first_name.trim(),
+        whatsappNumber: profile.whatsapp_number,
+        passwordHash: await hashPassword(profile.password),
+        isAdmin: options.isAdmin ?? false,
+        invitedBy: options.invitedBy,
+      })
+      .returning();
+  } catch (e) {
+    if (isUniqueViolation(e)) throw new EmailTakenError();
+    throw e;
+  }
   const [row] = rows;
   if (!row) throw new Error("insert returned no row");
   return asMe(row);
@@ -81,4 +102,35 @@ export async function createProfile(
 export async function createFirstAdmin(db: Db, profile: NewProfile): Promise<Me | null> {
   if ((await db.$count(profiles)) > 0) return null;
   return createProfile(db, profile, { invitedBy: null, isAdmin: true });
+}
+
+/** Everyone, oldest first, with who vouched for them. For the admin screen only. */
+export async function listMembers(db: Db): Promise<Member[]> {
+  const inviter = alias(profiles, "inviter");
+  const rows = await db
+    .select({
+      id: profiles.id,
+      first_name: profiles.firstName,
+      is_admin: profiles.isAdmin,
+      email: profiles.email,
+      invited_by_first_name: inviter.firstName,
+    })
+    .from(profiles)
+    .leftJoin(inviter, eq(profiles.invitedBy, inviter.id))
+    .orderBy(asc(profiles.createdAt), asc(profiles.id));
+  return rows;
+}
+
+/**
+ * A new one-time password, set by Rob and handed over in WhatsApp (ADR 0009). There is no
+ * self-service change: this is the only way a password ever changes. False if there is no such
+ * person.
+ */
+export async function setPassword(db: Db, id: string, password: string): Promise<boolean> {
+  const changed = await db
+    .update(profiles)
+    .set({ passwordHash: await hashPassword(password) })
+    .where(eq(profiles.id, id))
+    .returning({ id: profiles.id });
+  return changed.length === 1;
 }

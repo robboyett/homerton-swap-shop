@@ -18,4 +18,6 @@ When the list gets long, turn each line into one of three things: a rule in `pnp
 
 8 Oct, Claude, sign-in PR: the Chrome extension could not settle on the local Nuxt dev page (document never idle, twice), so the signed-in pages were checked with curl and the headless screenshots only. It repeated on the next PR, so the method is now `skills/screenshot-pages`.
 
+8 Oct, Claude, #11: merged while the preview check was still pending. `gh pr checks --watch` returned at once because the Vercel check had not registered yet, and the merge was chained after it with `;` rather than `&&`, so nothing stopped it. The production deploy was green, by luck not design. Until this fails again: wait for the check to appear and read SUCCESS before merging, and never chain a merge after a watch with `;`.
+
 <!-- add lines above this comment -->

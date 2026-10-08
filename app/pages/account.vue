@@ -29,6 +29,10 @@ useHead({ title: "your account · homerton swap shop" });
         <span>to change your password or your number, ask rob.</span>
       </div>
 
+      <div v-if="viewer.is_admin">
+        <NuxtLink to="/admin">invite someone</NuxtLink>
+      </div>
+
       <div>
         <button type="button" class="text-button" @click="signOut">sign out</button>
       </div>
