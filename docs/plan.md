@@ -23,6 +23,8 @@ This table is closed. Changing a row is a conversation with Rob and an ADR, not 
 | Reserving | Immediate on tapping "I'd like this" | Two people asking for the same book is the thing that sours a swap. First tap wins, visibly |
 | After reserving | The owner's WhatsApp link appears for the requester | The site hands over to the conversation. It never tries to be the conversation |
 | Undoing | Either side can put it back on the shelf, any time, including after it was marked collected | Plans change, and "we've collected it" is one tap on a phone. A book nobody but one quiet person can put back is the worse failure ([ADR 0008](adr/0008-either-side-can-undo.md)) |
+| Removing a book | Rob can take any book off the shelf. The record stays; it can go back | Moderation is Rob's job (ADR 0006). Keeping the record means a mistake is undone in one tap and a pattern stays visible to him ([ADR 0012](adr/0012-removing-keeps-the-record.md)) |
+| Removing an account | Rob can put someone out of the shop: they cannot sign in, their books come off the shelf, what they held goes back. Reversible. One admin, who cannot remove himself | A neighbourhood site needs a door that closes without burning the records ([ADR 0012](adr/0012-removing-keeps-the-record.md)). Editing a name or number comes with it; a second admin does not |
 | Reserving your own book | Allowed | Harmless: you see only your own number and can release it again. Not worth a rule nobody would have guessed ([ADR 0008](adr/0008-either-side-can-undo.md)) |
 | Collecting | The requester ticks "we've collected it"; undoable | The person who knows is the person who turned up |
 | Reservation expiry | None | A nudge after a week is an option, not a decision. See the open questions |

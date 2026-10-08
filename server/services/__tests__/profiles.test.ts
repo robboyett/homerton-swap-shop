@@ -1,6 +1,10 @@
 /** Accounts and sign-in, against Postgres in-process (ADR 0007). Emails are @example.com only. */
+
+import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
+import { items } from "../db/schema";
 import type { Db } from "../db/types";
+import { bookPage, createItems, listShelf, reserve } from "../items";
 import {
   createFirstAdmin,
   createProfile,
@@ -8,8 +12,11 @@ import {
   listMembers,
   meById,
   normaliseEmail,
+  removeMember,
+  restoreMember,
   setPassword,
   signIn,
+  updateMember,
 } from "../profiles";
 import { freshDb } from "./pglite";
 
@@ -106,6 +113,7 @@ describe("the admin screen", () => {
       "id",
       "invited_by_first_name",
       "is_admin",
+      "removed_at",
     ]);
   });
 
@@ -124,5 +132,70 @@ describe("the admin screen", () => {
     expect(await setPassword(db, "00000000-0000-4000-8000-000000000000", "fox-lamp-river-42")).toBe(
       false,
     );
+  });
+});
+
+describe("moderation of people (ADR 0012)", () => {
+  const book = (title: string) => ({
+    isbn: null,
+    title,
+    author: null,
+    blurb: null,
+    cover_url: null,
+    genre: "picture books" as const,
+    age_band: "0-3" as const,
+  });
+
+  it("corrects a name or number, and nothing else", async () => {
+    const me = await createFirstAdmin(db, rob);
+    expect(
+      await updateMember(db, me?.id ?? "", {
+        first_name: " robert ",
+        whatsapp_number: "+447700900002",
+      }),
+    ).toBe(true);
+    const [row] = await listMembers(db);
+    expect(row?.first_name).toBe("robert");
+    expect(row?.email).toBe("rob@example.com");
+    expect(
+      await updateMember(db, "00000000-0000-4000-8000-000000000000", {
+        first_name: "x",
+        whatsapp_number: "+447700900002",
+      }),
+    ).toBe(false);
+  });
+
+  it("removing someone signs them out, removes their books, and releases what they held", async () => {
+    const admin = await createFirstAdmin(db, rob);
+    const priya = await createProfile(
+      db,
+      { ...rob, email: "priya@example.com", first_name: "priya", whatsapp_number: "+447700900123" },
+      { invitedBy: admin?.id ?? null },
+    );
+    const [priyas] = await createItems(db, priya.id, [book("Priya's book")]);
+    const [robs] = await createItems(db, admin?.id ?? "", [book("Rob's book")]);
+    await reserve(db, robs ?? "", priya.id);
+
+    expect(await removeMember(db, priya.id)).toBe(true);
+
+    expect(await signIn(db, "priya@example.com", rob.password)).toBeNull();
+    expect(await meById(db, priya.id)).toBeNull();
+    expect((await listShelf(db)).map((b) => b.title)).toEqual(["Rob's book"]);
+    expect((await bookPage(db, robs ?? "", admin?.id ?? ""))?.state).toBe("available");
+    const [removed] = await db
+      .select()
+      .from(items)
+      .where(eq(items.id, priyas ?? ""));
+    expect(removed?.status).toBe("removed");
+    expect(removed?.removedReason).toBe("account removed");
+    expect(
+      (await listMembers(db)).find((m) => m.first_name === "priya")?.removed_at,
+    ).not.toBeNull();
+
+    // Safe to repeat, and reversible for the person; the books stay removed on purpose.
+    expect(await removeMember(db, priya.id)).toBe(true);
+    expect(await restoreMember(db, priya.id)).toBe(true);
+    expect((await signIn(db, "priya@example.com", rob.password))?.first_name).toBe("priya");
+    expect((await listShelf(db)).map((b) => b.title)).toEqual(["Rob's book"]);
   });
 });

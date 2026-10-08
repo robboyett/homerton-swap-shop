@@ -39,6 +39,8 @@ export const profiles = pgTable("profiles", {
   isAdmin: boolean("is_admin").notNull().default(false),
   /** Who vouched for them. A real reference, as docs/data.md has always declared it. */
   invitedBy: uuid("invited_by").references((): AnyPgColumn => profiles.id),
+  /** Out of the shop (ADR 0012): cannot sign in, books removed, reservations released. Reversible. */
+  removedAt: timestamp("removed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -62,5 +64,8 @@ export const items = pgTable("items", {
   reservedBy: uuid("reserved_by").references(() => profiles.id),
   reservedAt: timestamp("reserved_at", { withTimezone: true }),
   collectedAt: timestamp("collected_at", { withTimezone: true }),
+  /** Taken off the shelf by an admin (ADR 0012). The record stays; nobody but an admin sees it. */
+  removedAt: timestamp("removed_at", { withTimezone: true }),
+  removedReason: text("removed_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

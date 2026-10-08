@@ -4,11 +4,11 @@
  * Everything returned from this file is the browser shape from shared/schema.ts, never a row:
  * the row carries a password hash and other people's emails, and neither leaves this folder.
  */
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Me, Member, NewProfile } from "../../shared/schema";
 import { hashPassword, verifyPassword } from "../utils/password";
-import { profiles } from "./db/schema";
+import { items, profiles } from "./db/schema";
 import type { Db } from "./db/types";
 
 /** Trimmed and lower-cased, so `Priya@Example.com ` and `priya@example.com` are one person. */
@@ -44,8 +44,12 @@ function asMe(row: Row): Me {
 const NOBODY =
   "scrypt$16384$9f184ef73ed297d2292adcc7621f12d1$4b2e8f66ec1f490396b8dc32920ff13a1adb1f50a4a0e8f866ebfa84441357622504e4b2bba9729d77886d6e987b353811e74028b4317447fb7141768064c5a2";
 
+/** Null for nobody and for somebody removed (ADR 0012): their cookie stops working here. */
 export async function meById(db: Db, id: string): Promise<Me | null> {
-  const [row] = await db.select().from(profiles).where(eq(profiles.id, id));
+  const [row] = await db
+    .select()
+    .from(profiles)
+    .where(and(eq(profiles.id, id), isNull(profiles.removedAt)));
   return row ? asMe(row) : null;
 }
 
@@ -54,7 +58,7 @@ export async function signIn(db: Db, email: string, password: string): Promise<M
   const [row] = await db
     .select()
     .from(profiles)
-    .where(eq(profiles.email, normaliseEmail(email)));
+    .where(and(eq(profiles.email, normaliseEmail(email)), isNull(profiles.removedAt)));
   const ok = await verifyPassword(password, row?.passwordHash ?? NOBODY);
   return ok && row ? asMe(row) : null;
 }
@@ -114,11 +118,12 @@ export async function listMembers(db: Db): Promise<Member[]> {
       is_admin: profiles.isAdmin,
       email: profiles.email,
       invited_by_first_name: inviter.firstName,
+      removed_at: profiles.removedAt,
     })
     .from(profiles)
     .leftJoin(inviter, eq(profiles.invitedBy, inviter.id))
     .orderBy(asc(profiles.createdAt), asc(profiles.id));
-  return rows;
+  return rows.map((r) => ({ ...r, removed_at: r.removed_at?.toISOString() ?? null }));
 }
 
 /**
@@ -130,6 +135,64 @@ export async function setPassword(db: Db, id: string, password: string): Promise
   const changed = await db
     .update(profiles)
     .set({ passwordHash: await hashPassword(password) })
+    .where(eq(profiles.id, id))
+    .returning({ id: profiles.id });
+  return changed.length === 1;
+}
+
+/* ---- moderation (ADR 0012): the caller has already checked the viewer is an admin ---- */
+
+/** A corrected first name or number. False if there is no such person. */
+export async function updateMember(
+  db: Db,
+  id: string,
+  edit: { first_name: string; whatsapp_number: string },
+): Promise<boolean> {
+  const changed = await db
+    .update(profiles)
+    .set({ firstName: edit.first_name.trim(), whatsappNumber: edit.whatsapp_number })
+    .where(eq(profiles.id, id))
+    .returning({ id: profiles.id });
+  return changed.length === 1;
+}
+
+/**
+ * Out of the shop. Three statements, in an order that is safe to repeat: whatever they held
+ * goes back on the shelf, whatever they own comes off it, then the account is marked. Neon
+ * over HTTP has no transactions; a half-done removal is finished by calling this again.
+ * False if there is no such person.
+ */
+export async function removeMember(db: Db, id: string): Promise<boolean> {
+  await db
+    .update(items)
+    .set({ status: "available", reservedBy: null, reservedAt: null, collectedAt: null })
+    .where(and(eq(items.reservedBy, id), inArray(items.status, ["reserved", "collected"])));
+  await db
+    .update(items)
+    .set({
+      status: "removed",
+      removedAt: new Date(),
+      removedReason: "account removed",
+      reservedBy: null,
+      reservedAt: null,
+      collectedAt: null,
+    })
+    .where(
+      and(eq(items.ownerId, id), inArray(items.status, ["available", "reserved", "collected"])),
+    );
+  const changed = await db
+    .update(profiles)
+    .set({ removedAt: new Date() })
+    .where(eq(profiles.id, id))
+    .returning({ id: profiles.id });
+  return changed.length === 1;
+}
+
+/** Back in. Their books stay removed until an admin restores them one by one, on purpose. */
+export async function restoreMember(db: Db, id: string): Promise<boolean> {
+  const changed = await db
+    .update(profiles)
+    .set({ removedAt: null })
     .where(eq(profiles.id, id))
     .returning({ id: profiles.id });
   return changed.length === 1;

@@ -8,6 +8,7 @@
  */
 const route = useRoute();
 const id = String(route.params.id);
+const viewer = useViewer();
 
 const { data, error, refresh } = await useFetch(`/api/items/${id}`);
 
@@ -57,6 +58,19 @@ async function move(which: Move) {
     }
   } finally {
     attempts.value++;
+    busy.value = false;
+  }
+}
+
+/** Admins only (ADR 0012): off the shelf for everyone, record kept, back to the shelf. */
+async function takeOff() {
+  busy.value = true;
+  try {
+    await $fetch(`/api/items/${id}/remove`, { method: "POST", body: {} });
+    await navigateTo("/");
+  } catch {
+    note.value = "that didn't save. try again in a moment.";
+  } finally {
     busy.value = false;
   }
 }
@@ -172,6 +186,12 @@ useHead({ title: () => `${book.value?.title ?? "book"} · homerton swap shop` })
           </div>
 
           <p v-if="note" class="mt-28" role="status">{{ note }}</p>
+        </div>
+
+        <div v-if="viewer?.is_admin" class="mt-36">
+          <button type="button" class="text-button" :disabled="busy" @click="takeOff">
+            take it off the shelf
+          </button>
         </div>
       </div>
     </div>

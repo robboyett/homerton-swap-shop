@@ -537,6 +537,20 @@ button {
   padding: 4px 0;
 }
 
+.member--book {
+  padding: 8px 0;
+}
+
+/* An inline edit or reason box takes the whole row, under the name it belongs to. */
+.member__edit,
+.member__reason {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+
 /* ---- how it works ---- */
 
 .explain {

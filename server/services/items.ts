@@ -8,15 +8,24 @@
  * Authorisation is here and only here. Neon has no row-level security in this design (ADR 0002),
  * so there is nothing behind these checks. docs/data.md holds the rules they implement.
  */
-import { and, desc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, notInArray, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { type BookPage, bookState, type NewBook, type ShelfBook } from "../../shared/schema";
+import {
+  type AdminBook,
+  type BookPage,
+  bookState,
+  type NewBook,
+  type ShelfBook,
+} from "../../shared/schema";
 import { items, profiles } from "./db/schema";
 import type { Db } from "./db/types";
 
 export type { Db };
 
 /* ---- reading: every shape that leaves this file is a projection, never a row (rule 4) ---- */
+
+/** Collected books are gone; removed ones were taken away (ADR 0012). Neither is on the shelf. */
+const OFF_THE_SHELF: ("collected" | "removed")[] = ["collected", "removed"];
 
 const shelfColumns = {
   id: items.id,
@@ -39,7 +48,7 @@ export async function listShelf(db: Db): Promise<ShelfBook[]> {
   return db
     .select(shelfColumns)
     .from(items)
-    .where(ne(items.status, "collected"))
+    .where(notInArray(items.status, OFF_THE_SHELF))
     .orderBy(desc(items.createdAt), items.title);
 }
 
@@ -52,7 +61,9 @@ export async function moreInGenre(
   return db
     .select(shelfColumns)
     .from(items)
-    .where(and(eq(items.genre, genre), ne(items.status, "collected"), ne(items.id, exceptId)))
+    .where(
+      and(eq(items.genre, genre), notInArray(items.status, OFF_THE_SHELF), ne(items.id, exceptId)),
+    )
     .orderBy(desc(items.createdAt), items.title)
     .limit(10);
 }
@@ -81,7 +92,8 @@ export async function bookPage(db: Db, itemId: string, viewerId: string): Promis
     .innerJoin(owner, eq(items.ownerId, owner.id))
     .leftJoin(requester, eq(items.reservedBy, requester.id))
     .where(eq(items.id, itemId));
-  if (!row) return null;
+  // A removed book has no page for anyone. Admins find it on their own screen (ADR 0012).
+  if (!row || row.status === "removed") return null;
 
   const state = bookState(row, viewerId);
   const {
@@ -210,4 +222,51 @@ export async function uncollect(db: Db, itemId: string, viewerId: string): Promi
     )
     .returning({ id: items.id });
   return changed.length === 1;
+}
+
+/* ---- moderation (ADR 0012): the caller has already checked the viewer is an admin ---- */
+
+/**
+ * Off the shelf, record kept. Whatever reservation it had ends with it: the holder's page simply
+ * stops answering. Works from any status but removed; false if there is no such book.
+ */
+export async function removeItem(db: Db, itemId: string, reason: string | null): Promise<boolean> {
+  const changed = await db
+    .update(items)
+    .set({
+      status: "removed",
+      removedAt: new Date(),
+      removedReason: reason,
+      reservedBy: null,
+      reservedAt: null,
+      collectedAt: null,
+    })
+    .where(and(eq(items.id, itemId), ne(items.status, "removed")))
+    .returning({ id: items.id });
+  return changed.length === 1;
+}
+
+/** Back on the shelf as available, with no memory of the removal beyond the record. */
+export async function restoreItem(db: Db, itemId: string): Promise<boolean> {
+  const changed = await db
+    .update(items)
+    .set({ status: "available", removedAt: null, removedReason: null })
+    .where(and(eq(items.id, itemId), eq(items.status, "removed")))
+    .returning({ id: items.id });
+  return changed.length === 1;
+}
+
+/** Every book, newest first, with whose it is: the admin's view. Still no numbers. */
+export async function listForAdmin(db: Db): Promise<AdminBook[]> {
+  const rows = await db
+    .select({
+      ...shelfColumns,
+      owner_first_name: profiles.firstName,
+      removed_at: items.removedAt,
+      removed_reason: items.removedReason,
+    })
+    .from(items)
+    .innerJoin(profiles, eq(items.ownerId, profiles.id))
+    .orderBy(desc(items.createdAt), items.title);
+  return rows.map((r) => ({ ...r, removed_at: r.removed_at?.toISOString() ?? null }));
 }

@@ -13,10 +13,13 @@ import {
   collect,
   createItems,
   type Db,
+  listForAdmin,
   listShelf,
   moreInGenre,
   release,
+  removeItem,
   reserve,
+  restoreItem,
   uncollect,
 } from "../items";
 import { freshDb } from "./pglite";
@@ -332,5 +335,35 @@ describe("publishing a pile", () => {
 
   it("publishes nothing from an empty pile", async () => {
     expect(await createItems(db, asker, [])).toEqual([]);
+  });
+});
+
+describe("moderation (ADR 0012)", () => {
+  it("takes a book off the shelf for everyone, ends its reservation, and keeps the record", async () => {
+    await reserve(db, itemId, asker);
+    expect(await removeItem(db, itemId, "not a kids' book")).toBe(true);
+    expect(await listShelf(db)).toEqual([]);
+    expect(await bookPage(db, itemId, asker)).toBeNull();
+    expect(await bookPage(db, itemId, owner)).toBeNull();
+    expect(await moreInGenre(db, "picture books", "00000000-0000-4000-8000-000000000000")).toEqual(
+      [],
+    );
+    const [row] = await listForAdmin(db);
+    expect(row?.status).toBe("removed");
+    expect(row?.removed_reason).toBe("not a kids' book");
+    expect(row?.owner_first_name).toBe("priya");
+    expect(row?.removed_at).not.toBeNull();
+    expect(JSON.stringify(row)).not.toContain("+44");
+  });
+
+  it("cannot be reserved while removed, and comes back as available with no memory of it", async () => {
+    await removeItem(db, itemId, null);
+    expect(await reserve(db, itemId, asker)).toBe(false);
+    expect(await removeItem(db, itemId, null)).toBe(false);
+    expect(await restoreItem(db, itemId)).toBe(true);
+    expect(await restoreItem(db, itemId)).toBe(false);
+    const page = await bookPage(db, itemId, bystander);
+    expect(page?.state).toBe("available");
+    expect((await statusOf(itemId)).removedAt).toBeNull();
   });
 });
