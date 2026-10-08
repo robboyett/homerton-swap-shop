@@ -8,11 +8,106 @@
  * Authorisation is here and only here. Neon has no row-level security in this design (ADR 0002),
  * so there is nothing behind these checks. docs/data.md holds the rules they implement.
  */
-import { and, eq, inArray, or } from "drizzle-orm";
-import { items } from "./db/schema";
+import { and, desc, eq, inArray, ne, or } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
+import { type BookPage, bookState, type ShelfBook } from "../../shared/schema";
+import { items, profiles } from "./db/schema";
 import type { Db } from "./db/types";
 
 export type { Db };
+
+/* ---- reading: every shape that leaves this file is a projection, never a row (rule 4) ---- */
+
+const shelfColumns = {
+  id: items.id,
+  kind: items.kind,
+  title: items.title,
+  author: items.author,
+  genre: items.genre,
+  age_band: items.ageBand,
+  status: items.status,
+  cover_url: items.coverUrl,
+  photo_url: items.photoUrl,
+  approx_count: items.approxCount,
+};
+
+/** The shelf: everything not yet collected, newest first. Carries nothing about people. */
+export async function listShelf(db: Db): Promise<ShelfBook[]> {
+  return db
+    .select(shelfColumns)
+    .from(items)
+    .where(ne(items.status, "collected"))
+    .orderBy(desc(items.createdAt));
+}
+
+/** Up to ten more from the same section, for the foot of a book page. */
+export async function moreInGenre(
+  db: Db,
+  genre: ShelfBook["genre"],
+  exceptId: string,
+): Promise<ShelfBook[]> {
+  return db
+    .select(shelfColumns)
+    .from(items)
+    .where(and(eq(items.genre, genre), ne(items.status, "collected"), ne(items.id, exceptId)))
+    .orderBy(desc(items.createdAt))
+    .limit(10);
+}
+
+/**
+ * One book, as this viewer may see it. The one place the five states are decided for a page,
+ * and the one place a WhatsApp number is attached to anything: only to the other side of a
+ * live reservation (docs/data.md, rule 4). Null when there is no such book.
+ */
+export async function bookPage(db: Db, itemId: string, viewerId: string): Promise<BookPage | null> {
+  const owner = alias(profiles, "owner");
+  const requester = alias(profiles, "requester");
+  const [row] = await db
+    .select({
+      ...shelfColumns,
+      blurb: items.blurb,
+      created_at: items.createdAt,
+      owner_id: items.ownerId,
+      reserved_by: items.reservedBy,
+      owner_first_name: owner.firstName,
+      owner_number: owner.whatsappNumber,
+      requester_first_name: requester.firstName,
+      requester_number: requester.whatsappNumber,
+    })
+    .from(items)
+    .innerJoin(owner, eq(items.ownerId, owner.id))
+    .leftJoin(requester, eq(items.reservedBy, requester.id))
+    .where(eq(items.id, itemId));
+  if (!row) return null;
+
+  const state = bookState(row, viewerId);
+  const {
+    owner_id,
+    reserved_by,
+    owner_number,
+    requester_first_name,
+    requester_number,
+    created_at,
+    ...book
+  } = row;
+
+  let contact: BookPage["contact"] = null;
+  if (state === "mine")
+    contact = { first_name: book.owner_first_name, whatsapp_number: owner_number };
+  if (state === "owner" && requester_first_name && requester_number) {
+    contact = { first_name: requester_first_name, whatsapp_number: requester_number };
+  }
+
+  return {
+    ...book,
+    created_at: created_at.toISOString(),
+    state,
+    contact,
+    can_undo: state === "collected" && (owner_id === viewerId || reserved_by === viewerId),
+  };
+}
+
+/* ---- the four moves ---- */
 
 /**
  * Reserve, if it is still on the shelf.

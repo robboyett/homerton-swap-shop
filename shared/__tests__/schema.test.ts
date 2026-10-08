@@ -6,8 +6,7 @@
  * security here (ADR 0002), so a missed check has nothing behind it.
  */
 import { describe, expect, it } from "vitest";
-import { ITEMS, PROFILES, VIEWER_ID } from "../fixtures";
-import { AGE_BANDS, bookState, GENRES, type Item, itemSchema, showsWhatsApp } from "../schema";
+import { bookState, type Item, showsWhatsApp } from "../schema";
 
 const base: Item = {
   id: "i1",
@@ -68,43 +67,5 @@ describe("showsWhatsApp", () => {
     expect(showsWhatsApp("other")).toBe(false);
     expect(showsWhatsApp("available")).toBe(false);
     expect(showsWhatsApp("collected")).toBe(false);
-  });
-});
-
-describe("fixtures", () => {
-  it("is a shelf of valid items", () => {
-    expect(ITEMS.length).toBeGreaterThan(40);
-    for (const item of ITEMS) {
-      expect(() => itemSchema.parse(item)).not.toThrow();
-    }
-  });
-
-  it("only uses genres and age bands the grid can section", () => {
-    for (const item of ITEMS) {
-      expect(GENRES).toContain(item.genre);
-      expect(AGE_BANDS).toContain(item.age_band);
-    }
-  });
-
-  it("gives every reserved item a reserver, and every other item none", () => {
-    for (const item of ITEMS) {
-      if (item.status === "reserved") expect(item.reserved_by).toBeTruthy();
-      else expect(item.reserved_by).toBeNull();
-    }
-  });
-
-  it("has an owner on file for every item, and a viewer among them", () => {
-    const ids = new Set(PROFILES.map((p) => p.id));
-    expect(ids.has(VIEWER_ID)).toBe(true);
-    for (const item of ITEMS) {
-      expect(ids.has(item.owner_id)).toBe(true);
-    }
-  });
-
-  it("never carries a number outside the drama range", () => {
-    // scripts/no-real-numbers.mjs holds the whole tree; this holds the shape as well (ADR 0005).
-    for (const profile of PROFILES) {
-      expect(profile.whatsapp_number).toMatch(/^\+447700900\d{3}$/);
-    }
   });
 });

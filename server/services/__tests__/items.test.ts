@@ -8,7 +8,16 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { items, profiles } from "../db/schema";
-import { collect, type Db, release, reserve, uncollect } from "../items";
+import {
+  bookPage,
+  collect,
+  type Db,
+  listShelf,
+  moreInGenre,
+  release,
+  reserve,
+  uncollect,
+} from "../items";
 import { freshDb } from "./pglite";
 
 let db: Db;
@@ -203,5 +212,84 @@ describe("a whole life", () => {
     const row = await statusOf(itemId);
     expect(row.status).toBe("collected");
     expect(row.reservedBy).toBe(bystander);
+  });
+});
+
+describe("what a page may see (docs/data.md, rule 4)", () => {
+  it("the shelf lists what is not collected, newest first, and nothing about people", async () => {
+    const second = await freshItem();
+    await reserve(db, second, asker);
+    await collect(db, second, asker);
+    const third = await freshItem();
+    const shelf = await listShelf(db);
+    expect(shelf.map((b) => b.id)).toEqual([third, itemId]);
+    for (const book of shelf) {
+      expect(Object.keys(book).sort()).toEqual([
+        "age_band",
+        "approx_count",
+        "author",
+        "cover_url",
+        "genre",
+        "id",
+        "kind",
+        "photo_url",
+        "status",
+        "title",
+      ]);
+    }
+  });
+
+  it("shows nobody's number on a book nobody has asked for", async () => {
+    const page = await bookPage(db, itemId, bystander);
+    expect(page?.state).toBe("available");
+    expect(page?.contact).toBeNull();
+    expect(page?.owner_first_name).toBe("priya");
+    expect(page).not.toHaveProperty("reserved_by");
+    expect(page).not.toHaveProperty("owner_id");
+    expect(JSON.stringify(page)).not.toContain("+44");
+  });
+
+  it("gives the asker the owner's number, and the owner the asker's", async () => {
+    await reserve(db, itemId, asker);
+    const mine = await bookPage(db, itemId, asker);
+    expect(mine?.state).toBe("mine");
+    expect(mine?.contact).toEqual({ first_name: "priya", whatsapp_number: "+447700900123" });
+    const owners = await bookPage(db, itemId, owner);
+    expect(owners?.state).toBe("owner");
+    expect(owners?.contact).toEqual({ first_name: "sam", whatsapp_number: "+447700900456" });
+  });
+
+  it("tells a bystander only that it is reserved", async () => {
+    await reserve(db, itemId, asker);
+    const page = await bookPage(db, itemId, bystander);
+    expect(page?.state).toBe("other");
+    expect(page?.contact).toBeNull();
+    expect(JSON.stringify(page)).not.toContain("+44");
+    expect(JSON.stringify(page)).not.toContain("sam");
+  });
+
+  it("shows no number once collected, and offers undo only to the two sides", async () => {
+    await reserve(db, itemId, asker);
+    await collect(db, itemId, asker);
+    for (const [viewer, canUndo] of [
+      [asker, true],
+      [owner, true],
+      [bystander, false],
+    ] as const) {
+      const page = await bookPage(db, itemId, viewer);
+      expect(page?.state).toBe("collected");
+      expect(page?.contact).toBeNull();
+      expect(page?.can_undo).toBe(canUndo);
+    }
+  });
+
+  it("is null for a book that does not exist", async () => {
+    expect(await bookPage(db, "00000000-0000-4000-8000-000000000000", asker)).toBeNull();
+  });
+
+  it("more in the genre leaves the book itself out", async () => {
+    const second = await freshItem();
+    const more = await moreInGenre(db, "picture books", itemId);
+    expect(more.map((b) => b.id)).toEqual([second]);
   });
 });

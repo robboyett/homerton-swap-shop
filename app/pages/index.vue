@@ -1,14 +1,18 @@
 <script setup lang="ts">
 /** Browse: every cover at once, sectioned by genre, filtered by age band (docs/ui.md). */
-import { ITEMS } from "~~/shared/fixtures";
 import { AGE_BANDS, GENRES } from "~~/shared/schema";
+
+const { data } = await useFetch("/api/items");
+const books = computed(() => data.value?.books ?? []);
 
 const FILTERS = ["all", ...AGE_BANDS] as const;
 type Filter = (typeof FILTERS)[number];
 
 const age = ref<Filter>("all");
 
-const shown = computed(() => ITEMS.filter((i) => age.value === "all" || i.age_band === age.value));
+const shown = computed(() =>
+  books.value.filter((i) => age.value === "all" || i.age_band === age.value),
+);
 
 /** Genre order comes from the schema, so a section can never appear in a surprising place. */
 const sections = computed(() =>
@@ -41,7 +45,11 @@ useHead({ title: "homerton swap shop" });
       <span class="filters__count">{{ shown.length }} on the shelf. faded ones are reserved.</span>
     </div>
 
-    <main class="shelf">
+    <main v-if="books.length === 0" class="shelf">
+      <p>nothing on the shelf yet. the first books arrive when adding does.</p>
+    </main>
+
+    <main v-else class="shelf">
       <section v-for="section in sections" :key="section.name" class="section">
         <div class="section__head">
           <h2>{{ section.name }}</h2>
@@ -54,7 +62,7 @@ useHead({ title: "homerton swap shop" });
             :to="`/books/${bookItem.id}`"
             :aria-label="`${bookItem.title}, ages ${bookItem.age_band}${bookItem.status === 'reserved' ? ', reserved' : ''}`"
           >
-            <BookCover :mock="bookItem.mock" :reserved="bookItem.status === 'reserved'" />
+            <BookCover :book="bookItem" :reserved="bookItem.status === 'reserved'" />
           </NuxtLink>
         </div>
       </section>

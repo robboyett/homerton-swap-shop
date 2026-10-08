@@ -116,7 +116,7 @@ Every gate that blocks prints one line starting `BLOCKED: <name>:` with the reas
 | `docs/runbook.md` | Symptom, cause, what to do |
 | `docs/notes.md` | The jot list |
 | `docs/design/` | The Claude design canvas. Visual truth for styling; never app code. |
-| `skills/` | `write-adr`. Add more only after needing them twice. |
+| `skills/` | `write-adr`, `screenshot-pages`. Add more only after needing them twice. |
 | `biome.jsonc`, `lefthook.yml` | Lint + format; commit gate |
 
 ---
