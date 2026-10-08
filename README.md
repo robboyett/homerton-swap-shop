@@ -15,7 +15,7 @@ Phase 0 — the workplace. No product code yet. The current phase is in [docs/ph
 | 0 | The workplace: one contract, one command, a review, the design in the repo |
 | 1 | The shelf on a URL. Grid, age filter, book detail in five states. Fixtures, no database |
 | 2 | It remembers, and it's ours. Neon, invites, sign-in, and the reserve flow |
-| 3 | Adding a book is one scan. Camera, barcode, Open Library, publish |
+| 3 | Adding a book is one scan, for anyone. Camera, barcode, Open Library, publish |
 | 4 | Cover photos read by a vision model, collections, toys and clothes |
 
 ## Start here
