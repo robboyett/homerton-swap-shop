@@ -46,7 +46,7 @@ Rob's to answer. An agent that needs one of these answered stops and asks.
 | Should a reservation get a gentle nudge after a week? | Decided against expiry. A nudge is undesigned |
 | Toys and clothes: same model, different filters? | Same data model is the assumption. Undesigned |
 | Consent to share WhatsApp numbers | Proposed at invite time, so reserving never surprises anyone. Not built |
-| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in and the profile (`/account`) are built; the invite screen is the third slice of Phase 3, after adding books ([ADR 0010](adr/0010-adding-books-before-the-invite-screen.md)); "requests" is still undesigned |
+| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in, the profile (`/account`) and the invite screen (`/admin`, with one-time passwords) are built; "requests" is still undesigned |
 
 ---
 

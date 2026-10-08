@@ -4,6 +4,8 @@
  * request because /api/me finds nobody.
  */
 import type { H3Event } from "h3";
+import { db } from "../services/db/client";
+import { meById } from "../services/profiles";
 
 type SessionData = { id?: string };
 
@@ -36,5 +38,16 @@ export async function viewerId(event: H3Event): Promise<string | null> {
 export async function requireViewerId(event: H3Event): Promise<string> {
   const id = await viewerId(event);
   if (!id) throw createError({ statusCode: 401, statusMessage: "sign in first" });
+  return id;
+}
+
+/**
+ * The signed-in admin's id, or a 403. Admin means invites and moderation and nothing else
+ * (ADR 0006); the flag is read from the database on each call, not trusted from the cookie.
+ */
+export async function requireAdminId(event: H3Event): Promise<string> {
+  const id = await requireViewerId(event);
+  const me = await meById(db(), id);
+  if (!me?.is_admin) throw createError({ statusCode: 403, statusMessage: "admins only" });
   return id;
 }

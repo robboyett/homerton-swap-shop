@@ -1,7 +1,16 @@
 /** Accounts and sign-in, against Postgres in-process (ADR 0007). Emails are @example.com only. */
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "../db/types";
-import { createFirstAdmin, createProfile, meById, normaliseEmail, signIn } from "../profiles";
+import {
+  createFirstAdmin,
+  createProfile,
+  EmailTakenError,
+  listMembers,
+  meById,
+  normaliseEmail,
+  setPassword,
+  signIn,
+} from "../profiles";
 import { freshDb } from "./pglite";
 
 let db: Db;
@@ -75,5 +84,46 @@ describe("accounts", () => {
 
   it("normalises the email the one way", () => {
     expect(normaliseEmail("  Priya@Example.Com\n")).toBe("priya@example.com");
+  });
+});
+
+describe("the admin screen", () => {
+  it("lists everyone oldest first, with who vouched for them, and only there with emails", async () => {
+    const admin = await createFirstAdmin(db, rob);
+    await createProfile(
+      db,
+      { ...rob, email: "priya@example.com", first_name: "priya", whatsapp_number: "+447700900123" },
+      { invitedBy: admin?.id ?? null },
+    );
+    const members = await listMembers(db);
+    expect(members.map((m) => [m.first_name, m.invited_by_first_name, m.is_admin])).toEqual([
+      ["rob", null, true],
+      ["priya", "rob", false],
+    ]);
+    expect(Object.keys(members[0] ?? {}).sort()).toEqual([
+      "created_at",
+      "email",
+      "first_name",
+      "id",
+      "invited_by_first_name",
+      "is_admin",
+    ]);
+  });
+
+  it("names a taken email plainly", async () => {
+    await createFirstAdmin(db, rob);
+    await expect(
+      createProfile(db, { ...rob, email: " ROB@example.com" }, { invitedBy: null }),
+    ).rejects.toBeInstanceOf(EmailTakenError);
+  });
+
+  it("sets a new password, after which only the new one works", async () => {
+    const me = await createFirstAdmin(db, rob);
+    expect(await setPassword(db, me?.id ?? "", "fox-lamp-river-42")).toBe(true);
+    expect(await signIn(db, rob.email, rob.password)).toBeNull();
+    expect((await signIn(db, rob.email, "fox-lamp-river-42"))?.first_name).toBe("rob");
+    expect(await setPassword(db, "00000000-0000-4000-8000-000000000000", "fox-lamp-river-42")).toBe(
+      false,
+    );
   });
 });

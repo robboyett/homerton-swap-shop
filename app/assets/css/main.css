@@ -510,6 +510,26 @@ button {
   gap: 4px 16px;
 }
 
+/* ---- the admin screen: everyone, one per line ---- */
+
+.admin {
+  max-width: 480px;
+}
+
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 16px;
+  padding: 4px 0;
+}
+
 /* ---- how it works ---- */
 
 .explain {
