@@ -1,0 +1,2 @@
+DROP INDEX "items_genre_age_idx";--> statement-breakpoint
+ALTER TABLE "profiles" ADD CONSTRAINT "profiles_invited_by_profiles_id_fk" FOREIGN KEY ("invited_by") REFERENCES "public"."profiles"("id") ON DELETE no action ON UPDATE no action;

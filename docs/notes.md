@@ -12,4 +12,6 @@ When the list gets long, turn each line into one of three things: a rule in `pnp
 
 8 Oct, Claude: did it a third time, one PR after writing the line above. `git add -A` is reflexive and a note did not stop it. Ignored the folder in `.gitignore` instead. The lesson that generalises: when a rule has failed twice, stop writing it down and make it mechanical — which is what AGENTS.md already says about prose.
 
+8 Oct, review of #6: rule 4 in docs/data.md (numbers are never shown to the wrong person) has no implementation or test in server/services/, because nothing reads yet. The first list or detail query must project the row rather than return it: `bookState` needs `reserved_by` to work out "mine", and `reserved_by` is exactly the field a bystander must not receive. Serialising a whole item row to the client breaks rule 4 the moment it ships.
+
 <!-- add lines above this comment -->

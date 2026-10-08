@@ -35,7 +35,7 @@ async function freshItem(): Promise<string> {
 
 beforeEach(async () => {
   const client = new PGlite();
-  db = drizzle(client) as unknown as Db;
+  db = drizzle(client);
   await migrate(drizzle(client), { migrationsFolder: "./drizzle" });
 
   const people = await db
@@ -67,8 +67,11 @@ describe("reserve", () => {
   });
 
   it("lets exactly one of two people win", async () => {
-    // The race, run as the database sees it: the second UPDATE finds no row with
-    // status = 'available' and changes nothing. This is the rule the product turns on.
+    // This proves the state guard, not a race: PGlite is a single connection, so the two
+    // statements run one after the other. The second UPDATE finds no row with
+    // status = 'available' and changes nothing, which is the part the code is responsible for.
+    // The row locking that makes it hold under real concurrency is Postgres's, and ADR 0007
+    // says why we do not try to demonstrate it here.
     const first = await reserve(db, itemId, asker);
     const second = await reserve(db, itemId, bystander);
     expect([first, second]).toEqual([true, false]);
@@ -81,7 +84,10 @@ describe("reserve", () => {
     expect(await reserve(db, itemId, bystander)).toBe(false);
   });
 
-  it("lets the owner reserve their own item, which is allowed and harmless", async () => {
+  // Nothing in docs/plan.md says whether an owner may reserve their own book. The guard is on
+  // status alone, so today they can. Pinned here so the behaviour is visible rather than
+  // accidental; if Rob decides otherwise, `owner_id <> viewer` joins the WHERE clause.
+  it("currently lets an owner reserve their own item, which no decision covers", async () => {
     expect(await reserve(db, itemId, owner)).toBe(true);
   });
 });

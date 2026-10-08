@@ -12,9 +12,8 @@ import { and, eq, or } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { items } from "./db/schema";
 
-// biome-ignore lint/suspicious/noExplicitAny: the driver differs by environment — Neon over HTTP
-// in production, Postgres in-process in tests (ADR 0007). The schema generic is what varies.
-export type Db = PgDatabase<PgQueryResultHKT, any, any>;
+/** Either driver: Neon over HTTP in production, Postgres in-process in tests (ADR 0007). */
+export type Db = PgDatabase<PgQueryResultHKT>;
 
 /**
  * Reserve, if it is still on the shelf.

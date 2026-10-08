@@ -33,34 +33,30 @@ export const profiles = pgTable("profiles", {
   whatsappNumber: text("whatsapp_number").notNull(),
   passwordHash: text("password_hash").notNull(),
   isAdmin: boolean("is_admin").notNull().default(false),
-  invitedBy: uuid("invited_by"),
+  /** Who vouched for them. A real reference, as docs/data.md has always declared it. */
+  invitedBy: uuid("invited_by").references((): AnyPgColumn => profiles.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 /** A book, or a collection posted as one. */
-export const items = pgTable(
-  "items",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    ownerId: uuid("owner_id")
-      .notNull()
-      .references(() => profiles.id),
-    kind: itemKind("kind").notNull().default("book"),
-    isbn: text("isbn"),
-    title: text("title").notNull(),
-    author: text("author"),
-    blurb: text("blurb"),
-    genre: genre("genre").notNull(),
-    ageBand: ageBand("age_band").notNull(),
-    coverUrl: text("cover_url"),
-    photoUrl: text("photo_url"),
-    approxCount: integer("approx_count"),
-    status: itemStatus("status").notNull().default("available"),
-    reservedBy: uuid("reserved_by").references(() => profiles.id),
-    reservedAt: timestamp("reserved_at", { withTimezone: true }),
-    collectedAt: timestamp("collected_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  // The shelf is read by genre section and filtered by age band, every page load.
-  (t) => [index("items_genre_age_idx").on(t.genre, t.ageBand)],
-);
+export const items = pgTable("items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: uuid("owner_id")
+    .notNull()
+    .references(() => profiles.id),
+  kind: itemKind("kind").notNull().default("book"),
+  isbn: text("isbn"),
+  title: text("title").notNull(),
+  author: text("author"),
+  blurb: text("blurb"),
+  genre: genre("genre").notNull(),
+  ageBand: ageBand("age_band").notNull(),
+  coverUrl: text("cover_url"),
+  photoUrl: text("photo_url"),
+  approxCount: integer("approx_count"),
+  status: itemStatus("status").notNull().default("available"),
+  reservedBy: uuid("reserved_by").references(() => profiles.id),
+  reservedAt: timestamp("reserved_at", { withTimezone: true }),
+  collectedAt: timestamp("collected_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

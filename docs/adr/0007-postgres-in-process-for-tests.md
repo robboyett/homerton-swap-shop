@@ -14,10 +14,10 @@ Three ways to do that:
 
 1. **Tests run against PGlite, inside `pnpm check`.** No network, no connection string, nothing to install beyond a devDependency. Anyone who clones the repo can prove the reserve rule.
 2. **They run the committed migration,** not a hand-written schema: `migrate()` applies `drizzle/` exactly as production gets it. A migration that would fail in production fails here first.
-3. **The services take a `db` argument** rather than reaching for a module-level client, which is what makes this possible. `server/db/client.ts` is the Neon client and is never imported by a test.
+3. **The services take a `db` argument** rather than reaching for a module-level client, which is what makes this possible. `server/services/db/client.ts` is the Neon client and is never imported by a test.
 
 **Consequences.** `@electric-sql/pglite` joins `docs/allowed-deps.txt` as a Phase 2 devDependency. `pnpm check` goes from about 0.3 s of tests to about 11 s, because each test gets a fresh database; that is the price of testing the thing that matters, and it is paid once per commit rather than once per push.
 
 What it costs beyond the time: PGlite is a single connection, so it cannot run two transactions at literally the same instant. The race test therefore proves what the code is responsible for — that the second UPDATE matches no row and reports failure — and relies on Postgres for the row-level locking underneath. That is the right division: we are not testing Postgres.
 
-What it does not change: production is Neon over HTTP (ADR 0002), and the one client stays in `server/db/client.ts`. Migrations are still generated files, never pushed straight at a database. The seam rule is untouched: vendors live in `server/services/` and `server/db/`, and the test sits inside `server/services/`.
+What it does not change: production is Neon over HTTP (ADR 0002), and the one client stays in `server/services/db/client.ts`. Migrations are still generated files, never pushed straight at a database. The seam rule is untouched and has no exception: vendors live in `server/services/` and nowhere else, which is why the Drizzle schema and the Neon client sit under it, and the test sits inside it too.

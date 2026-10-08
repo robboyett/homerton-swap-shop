@@ -32,6 +32,10 @@ export const statusSchema = z.enum(STATUSES);
  *
  * First name only, and the number is shown solely to the other side of a live reservation
  * (docs/data.md, rule 4). There is no email, surname, address or postcode field, on purpose.
+ *
+ * `password_hash` is in the database and deliberately not here: this shape is what reaches the
+ * browser, and a hash has no business being sent to it. The Drizzle table in
+ * server/services/db/schema.ts is the fuller picture.
  */
 export const profileSchema = z.object({
   id: z.string(),
