@@ -6,7 +6,7 @@
  * security here (ADR 0002), so a missed check has nothing behind it.
  */
 import { describe, expect, it } from "vitest";
-import { bookState, type Item, showsWhatsApp } from "../schema";
+import { bookIsbnFromBarcode, bookState, type Item, showsWhatsApp } from "../schema";
 
 const base: Item = {
   id: "i1",
@@ -67,5 +67,16 @@ describe("showsWhatsApp", () => {
     expect(showsWhatsApp("other")).toBe(false);
     expect(showsWhatsApp("available")).toBe(false);
     expect(showsWhatsApp("collected")).toBe(false);
+  });
+});
+
+describe("bookIsbnFromBarcode", () => {
+  it("accepts the EAN-13 printed on a book and nothing else", () => {
+    expect(bookIsbnFromBarcode("9780333710937")).toBe("9780333710937");
+    expect(bookIsbnFromBarcode("9791234567896")).toBe("9791234567896");
+    expect(bookIsbnFromBarcode("5000112637922")).toBeNull(); // a tin of beans
+    expect(bookIsbnFromBarcode("0333710932")).toBeNull(); // an ISBN-10 is never a barcode
+    expect(bookIsbnFromBarcode("978033371093")).toBeNull();
+    expect(bookIsbnFromBarcode("")).toBeNull();
   });
 });

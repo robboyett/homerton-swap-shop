@@ -27,7 +27,8 @@
     "nuxt": "^4.5.2",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "zxing-wasm": "^3.1.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",

@@ -64,6 +64,7 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 | Page | Divergence | Why |
 |---|---|---|
 | Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id | Rob asked that blank covers stay colourful like the mocks (8 Oct). Real art replaces it as soon as a book has a `cover_url` or `photo_url` |
-| Add books | The camera frame on `Scan.dc.html` is a text box for the number under the barcode, with "look it up" | The typed-ISBN slice comes before the camera (ADR 0010). Everything below the frame is as drawn |
+| Add books | The corner marks sit at the frame's edges and the caption 16px up; the board draws an inner target box with the caption 24px up | The camera fills the frame, so there is no inner box to mark. Four corners at the edge say the same thing in less |
+| Add books | The typed number box stays underneath the camera frame, labelled "or type the number under the barcode" | A bent paperback in a dim hallway (docs/plan.md). When there is no camera or no permission the frame disappears and the box is the only way in |
 | Add books | The chosen book in the pile shows section and age pickers, drawn like the age filter | The board shows them as text, pre-filled. A real lookup only guesses them, and the pile is where the person corrects the guess |
 | Add books | "no barcode? photograph the cover" is not shown; "not found? type the title and author" is | Photographing a cover is Phase 4. Typing is the fallback until then |

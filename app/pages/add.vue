@@ -1,13 +1,14 @@
 <script setup lang="ts">
 /**
- * Add books: type the number under the barcode, look it up, review the pile, publish in one go
- * (docs/plan.md, "Adding a book"). The canvas board (docs/design/Scan.dc.html) draws a camera
- * where the number box is; the camera is the next slice (ADR 0010) and everything below it is
- * the same. Not found? Type the title and author, and it goes in the pile with a plain cover.
+ * Add books: scan the barcode (or type the number under it), look it up, review the pile,
+ * publish in one go (docs/plan.md, "Adding a book"; the board is docs/design/Scan.dc.html).
+ * Not found? Type the title and author, and it goes in the pile with a plain cover.
  */
 import { AGE_BANDS, GENRES, isbnSchema, type NewBook } from "~~/shared/schema";
 
 const isbn = ref("");
+/** Set once if there is no camera or no permission; the typed box is then the only way in. */
+const cameraOff = ref(false);
 const pile = ref<NewBook[]>([]);
 const selected = ref(0);
 const busy = ref(false);
@@ -31,6 +32,16 @@ function add(book: NewBook) {
   typing.value = false;
   typedTitle.value = "";
   typedAuthor.value = "";
+}
+
+/**
+ * The camera read a book barcode: look it up as if the number had been typed. A book already in
+ * the pile is ignored, so a phone still pointed at it does not look it up again every few seconds.
+ */
+async function scanned(code: string) {
+  if (busy.value || pile.value.some((b) => b.isbn === code)) return;
+  isbn.value = code;
+  await lookup();
 }
 
 async function lookup() {
@@ -108,9 +119,22 @@ useHead({ title: "add books · homerton swap shop" });
     </header>
 
     <main class="add">
+      <ClientOnly v-if="!cameraOff">
+        <BarcodeScanner :paused="busy" @found="scanned" @unavailable="cameraOff = true" />
+        <template #fallback>
+          <div class="scan">
+            <span class="scan__corner scan__corner--tl" />
+            <span class="scan__corner scan__corner--tr" />
+            <span class="scan__corner scan__corner--bl" />
+            <span class="scan__corner scan__corner--br" />
+            <span class="scan__caption">starting the camera</span>
+          </div>
+        </template>
+      </ClientOnly>
+
       <form class="form" @submit.prevent="lookup">
         <label class="field">
-          <span>the number under the barcode</span>
+          <span>{{ cameraOff ? "the number under the barcode" : "or type the number under the barcode" }}</span>
           <input
             v-model="isbn"
             type="text"

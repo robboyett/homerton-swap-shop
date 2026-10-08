@@ -410,6 +410,65 @@ button {
   opacity: 0.5;
 }
 
+/* ---- add books: the camera frame, as the Scan board draws it ---- */
+
+.scan {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--ink);
+  color: var(--ground);
+  margin-top: 24px;
+}
+
+.scan__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan__corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--ground);
+}
+
+.scan__corner--tl {
+  top: 16px;
+  left: 16px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+.scan__corner--tr {
+  top: 16px;
+  right: 16px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+.scan__corner--bl {
+  bottom: 48px;
+  left: 16px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+.scan__corner--br {
+  bottom: 48px;
+  right: 16px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+.scan__caption {
+  position: absolute;
+  right: 0;
+  bottom: 16px;
+  left: 0;
+  text-align: center;
+}
+
 /* ---- add books: the pile ---- */
 
 .add {
