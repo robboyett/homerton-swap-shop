@@ -46,7 +46,7 @@ Rob's to answer. An agent that needs one of these answered stops and asks.
 | Should a reservation get a gentle nudge after a week? | Decided against expiry. A nudge is undesigned |
 | Toys and clothes: same model, different filters? | Same data model is the assumption. Undesigned |
 | Consent to share WhatsApp numbers | Proposed at invite time, so reserving never surprises anyone. Not built |
-| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in and the profile (`/account`) are built; the invite screen is next; "requests" is still undesigned |
+| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in and the profile (`/account`) are built; the invite screen is the third slice of Phase 3, after adding books ([ADR 0010](adr/0010-adding-books-before-the-invite-screen.md)); "requests" is still undesigned |
 
 ---
 
@@ -58,8 +58,8 @@ The table in [AGENTS.md](../AGENTS.md) is the enforced version; `docs/phase.md` 
 |---|---|
 | **0** | The workplace: one contract, one command, a review, and the design in the repo. No product code |
 | **1** | The shelf on a URL. The grid, the age filter, genre sections, book detail in all five states, how it works. Fixture items, no database, no accounts |
-| **2** | It remembers, and it's ours. Neon, invites, sign-in, real items, and the reserve / release / collected flow |
-| **3** | Adding a book is one scan, for anyone. Camera, barcode, Open Library, the pile, publish |
+| **2** | It remembers, and it's ours. Neon, sign-in, real items, and the reserve / release / collected flow |
+| **3** | Adding a book is one scan, for anyone. Typed ISBN first, then the camera, then the admin invite screen ([ADR 0010](adr/0010-adding-books-before-the-invite-screen.md)). Open Library, the pile, publish |
 | **4** | The long tail. Cover photos through a vision model, collections, toys and clothes |
 
 **Phase 1 is the shelf, not accounts,** which reverses the order in the original brief. The reason is in [ADR 0004](adr/0004-the-shelf-before-accounts.md): the look is the risky part, and an invite-only site with no shelf can't be shown to anyone.
