@@ -18,5 +18,9 @@ describe("passwords", () => {
     expect(await verifyPassword("right", "x")).toBe(false);
     expect(await verifyPassword("right", "bcrypt$10$abc$def")).toBe(false);
     expect(await verifyPassword("right", "scrypt$notanumber$00$00")).toBe(false);
+    // A key part that is not hex decodes to nothing; that must not verify everything.
+    expect(await verifyPassword("right", "scrypt$16384$00$zz")).toBe(false);
+    // A cost scrypt rejects must come back false, not thrown.
+    expect(await verifyPassword("right", "scrypt$12345$00$00")).toBe(false);
   });
 });

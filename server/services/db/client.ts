@@ -16,7 +16,9 @@ export function db() {
   if (cached) return cached;
   const url = process.env.DATABASE_URL;
   if (!url) {
-    throw new Error("DATABASE_URL is not set. Copy .env.example to .env; see docs/runbook.md.");
+    throw new Error(
+      "DATABASE_URL is not set. Run vercel env pull .env.local; see docs/runbook.md.",
+    );
   }
   cached = drizzle(neon(url));
   return cached;

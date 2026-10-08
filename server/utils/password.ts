@@ -32,6 +32,12 @@ export async function verifyPassword(password: string, stored: string): Promise<
   const n = Number(cost);
   if (!Number.isInteger(n) || n < 2) return false;
   const expected = Buffer.from(keyHex, "hex");
-  const key = await scrypt(password, Buffer.from(saltHex, "hex"), expected.length, n);
-  return key.length === expected.length && timingSafeEqual(key, expected);
+  if (expected.length !== KEY_LENGTH) return false;
+  try {
+    const key = await scrypt(password, Buffer.from(saltHex, "hex"), KEY_LENGTH, n);
+    return timingSafeEqual(key, expected);
+  } catch {
+    // A cost that is not a power of two, or too large for memory: not one of ours.
+    return false;
+  }
 }

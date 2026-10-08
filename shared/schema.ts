@@ -35,8 +35,8 @@ export const statusSchema = z.enum(STATUSES);
  *
  * `password_hash` and `email` are in the database and deliberately not here: this shape is what
  * reaches the browser, and neither a hash nor another neighbour's email has any business being
- * sent to it (ADR 0009). Your own email comes back from your own /api/me, nowhere else. The
- * Drizzle table in server/services/db/schema.ts is the fuller picture.
+ * sent to it (ADR 0009). Only you ever receive your own email, from /api/me and the routes that
+ * sign you in. The Drizzle table in server/services/db/schema.ts is the fuller picture.
  */
 export const profileSchema = z.object({
   id: z.string(),

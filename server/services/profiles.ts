@@ -27,7 +27,7 @@ function asMe(row: Row): Me {
  * and the sign-in form cannot be used to find out who has an account.
  */
 const NOBODY =
-  "scrypt$16384$a3f1c9d2e8b74a6f0c5d1e2f3a4b5c6d$6a0d1c6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a2918";
+  "scrypt$16384$9f184ef73ed297d2292adcc7621f12d1$4b2e8f66ec1f490396b8dc32920ff13a1adb1f50a4a0e8f866ebfa84441357622504e4b2bba9729d77886d6e987b353811e74028b4317447fb7141768064c5a2";
 
 export async function meById(db: Db, id: string): Promise<Me | null> {
   const [row] = await db.select().from(profiles).where(eq(profiles.id, id));
@@ -72,9 +72,11 @@ export async function createProfile(
 /**
  * Rob's own account, made once on an empty table. Returns null if anyone already exists.
  *
- * This is a count and then an insert, not one statement. It runs once, by the one person who
- * has the URL before anyone else, against an empty database; the worst case of the gap is that
- * he makes himself twice. Not worth a cleverer query.
+ * This is a count and then an insert, not one statement, and the route in front of it needs no
+ * sign-in, because nobody can sign in yet. So from the first deploy until Rob calls it, anyone
+ * who finds the URL could claim the admin seat, and two callers in the same instant could both
+ * succeed. The answer is process, not code: Rob calls it straight after the deploy and checks
+ * that the one row is his. A 409 on his first try means look, not retry.
  */
 export async function createFirstAdmin(db: Db, profile: NewProfile): Promise<Me | null> {
   if ((await db.$count(profiles)) > 0) return null;

@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    // Set NUXT_SESSION_SECRET in .env locally and in Vercel (Phase 2).
+    // NUXT_SESSION_SECRET: in .env.local locally (vercel env pull) and in Vercel (ADR 0009).
     // DATABASE_URL comes from Vercel Storage; see .env.example.
     sessionSecret: "",
   },
