@@ -17,6 +17,7 @@ This table is closed. Changing a row is a conversation with Rob and an ADR, not 
 |---|---|---|
 | Money | None, anywhere. Free only | It's a neighbourly swap, not a marketplace. Money changes what people expect of each other |
 | Who can join | Invite only. Rob creates accounts by hand | Being on the site assumes being in the WhatsApp group. Hand-made accounts are a hundred people, not a growth problem |
+| Who can add items | Any invited household, from the start | A swap, not Rob's shop. Rob-only cannot answer the one thing we most need to learn: whether anyone gives a book away unasked ([ADR 0006](adr/0006-any-household-can-add.md)) |
 | Addresses | Never on the site | People share them privately in WhatsApp when they choose to. Nothing to leak if we never hold it |
 | Condition or quality | No field | If it is readable, it is good enough. A quality field invites judgement nobody needs |
 | Reserving | Immediate on tapping "I'd like this" | Two people asking for the same book is the thing that sours a swap. First tap wins, visibly |
@@ -41,7 +42,6 @@ Rob's to answer. An agent that needs one of these answered stops and asks.
 
 | Question | Where it stands |
 |---|---|
-| Can invited households add their own items, or only Rob at first? | Not confirmed. Changes who sees "add books" in the nav, and the Phase 3 scope |
 | Should a reservation get a gentle nudge after a week? | Decided against expiry. A nudge is undesigned |
 | Toys and clothes: same model, different filters? | Same data model is the assumption. Undesigned |
 | Consent to share WhatsApp numbers | Proposed at invite time, so reserving never surprises anyone. Not built |
@@ -58,7 +58,7 @@ The table in [AGENTS.md](../AGENTS.md) is the enforced version; `docs/phase.md` 
 | **0** | The workplace: one contract, one command, a review, and the design in the repo. No product code |
 | **1** | The shelf on a URL. The grid, the age filter, genre sections, book detail in all five states, how it works. Fixture items, no database, no accounts |
 | **2** | It remembers, and it's ours. Neon, invites, sign-in, real items, and the reserve / release / collected flow |
-| **3** | Adding a book is one scan. Camera, barcode, Open Library, the pile, publish |
+| **3** | Adding a book is one scan, for anyone. Camera, barcode, Open Library, the pile, publish |
 | **4** | The long tail. Cover photos through a vision model, collections, toys and clothes |
 
 **Phase 1 is the shelf, not accounts,** which reverses the order in the original brief. The reason is in [ADR 0004](adr/0004-the-shelf-before-accounts.md): the look is the risky part, and an invite-only site with no shelf can't be shown to anyone.
