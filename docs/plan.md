@@ -22,7 +22,8 @@ This table is closed. Changing a row is a conversation with Rob and an ADR, not 
 | Condition or quality | No field | If it is readable, it is good enough. A quality field invites judgement nobody needs |
 | Reserving | Immediate on tapping "I'd like this" | Two people asking for the same book is the thing that sours a swap. First tap wins, visibly |
 | After reserving | The owner's WhatsApp link appears for the requester | The site hands over to the conversation. It never tries to be the conversation |
-| Undoing | Either side can put it back on the shelf, any time | Plans change. Nobody should have to ask permission to step back |
+| Undoing | Either side can put it back on the shelf, any time, including after it was marked collected | Plans change, and "we've collected it" is one tap on a phone. A book nobody but one quiet person can put back is the worse failure ([ADR 0008](adr/0008-either-side-can-undo.md)) |
+| Reserving your own book | Allowed | Harmless: you see only your own number and can release it again. Not worth a rule nobody would have guessed ([ADR 0008](adr/0008-either-side-can-undo.md)) |
 | Collecting | The requester ticks "we've collected it"; undoable | The person who knows is the person who turned up |
 | Reservation expiry | None | A nudge after a week is an option, not a decision. See the open questions |
 | Adding a book | Scan the barcode, look it up, review a pile, publish in one go | The barcode is the only thing that makes giving away twenty books bearable |

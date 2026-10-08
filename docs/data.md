@@ -57,8 +57,8 @@ No condition, no quality, no price, no location, no view count.
 ## The rules the database holds, not the UI
 
 1. **Reserving is atomic.** One statement: set `status = 'reserved'`, `reserved_by = me`, `reserved_at = now()` **where `id = ? and status = 'available'`**. If it updates no rows, someone else won; say so plainly. Two people tapping at the same moment cannot both win.
-2. **Releasing** is allowed to the owner or to `reserved_by`, and only from `reserved`. It returns `available` and clears `reserved_by` and `reserved_at`.
-3. **Collecting** is allowed to `reserved_by`, and only from `reserved`. Undoing it returns to `reserved` with `reserved_by` intact.
+2. **Releasing** is allowed to the owner or to `reserved_by`, from `reserved` **or from `collected`** (ADR 0008). It returns `available` and clears `reserved_by`, `reserved_at` and `collected_at`: a book on the shelf carries no memory of a collection that did not happen.
+3. **Collecting** is allowed to `reserved_by` alone, and only from `reserved`: the person who turned up is the one who knows. **Undoing it is open to the owner as well** (ADR 0008), so a mistaken tick is not a dead end, and returns to `reserved` with `reserved_by` intact.
 4. **Numbers are never shown to the wrong person.** While reserved, the requester sees the owner's number and the owner sees the requester's first name and number. Everyone else sees that it is reserved, not by whom. An available or collected item shows nobody's number.
 5. **Never store or display an address.** There is no field for one, and that is the point.
 

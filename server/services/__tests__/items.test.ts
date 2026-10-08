@@ -114,10 +114,22 @@ describe("release", () => {
     expect((await statusOf(itemId)).reservedBy).toBe(asker);
   });
 
-  it("is not a way to undo a collection", async () => {
+  it("takes a collected item straight back to the shelf, for either side (ADR 0008)", async () => {
     await reserve(db, itemId, asker);
     await collect(db, itemId, asker);
-    expect(await release(db, itemId, owner)).toBe(false);
+    expect(await release(db, itemId, owner)).toBe(true);
+    const row = await statusOf(itemId);
+    expect(row.status).toBe("available");
+    expect(row.reservedBy).toBeNull();
+    expect(row.reservedAt).toBeNull();
+    // A book on the shelf carries no memory of a collection that did not happen.
+    expect(row.collectedAt).toBeNull();
+  });
+
+  it("is still refused to a bystander on a collected item", async () => {
+    await reserve(db, itemId, asker);
+    await collect(db, itemId, asker);
+    expect(await release(db, itemId, bystander)).toBe(false);
     expect((await statusOf(itemId)).status).toBe("collected");
   });
 });
@@ -147,11 +159,20 @@ describe("collect", () => {
     expect(row.collectedAt).toBeNull();
   });
 
-  it("is only undoable by the person who collected it", async () => {
+  it("is undoable by the owner too, so a mistaken tick is not a dead end (ADR 0008)", async () => {
     await reserve(db, itemId, asker);
     await collect(db, itemId, asker);
-    expect(await uncollect(db, itemId, owner)).toBe(false);
+    expect(await uncollect(db, itemId, owner)).toBe(true);
+    const row = await statusOf(itemId);
+    expect(row.status).toBe("reserved");
+    expect(row.reservedBy).toBe(asker);
+  });
+
+  it("is refused to a bystander", async () => {
+    await reserve(db, itemId, asker);
+    await collect(db, itemId, asker);
     expect(await uncollect(db, itemId, bystander)).toBe(false);
+    expect((await statusOf(itemId)).status).toBe("collected");
   });
 });
 
