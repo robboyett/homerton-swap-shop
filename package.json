@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --dotenv .env.local",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && (test -d .git && lefthook install || true)",

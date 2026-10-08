@@ -31,11 +31,12 @@ export const statusSchema = z.enum(STATUSES);
  * A person. Made by Rob on the admin screen, never by sign-up.
  *
  * First name only, and the number is shown solely to the other side of a live reservation
- * (docs/data.md, rule 4). There is no email, surname, address or postcode field, on purpose.
+ * (docs/data.md, rule 4). There is no surname, address or postcode field, on purpose.
  *
- * `password_hash` is in the database and deliberately not here: this shape is what reaches the
- * browser, and a hash has no business being sent to it. The Drizzle table in
- * server/services/db/schema.ts is the fuller picture.
+ * `password_hash` and `email` are in the database and deliberately not here: this shape is what
+ * reaches the browser, and neither a hash nor another neighbour's email has any business being
+ * sent to it (ADR 0009). Only you ever receive your own email, from /api/me and the routes that
+ * sign you in. The Drizzle table in server/services/db/schema.ts is the fuller picture.
  */
 export const profileSchema = z.object({
   id: z.string(),
@@ -101,3 +102,26 @@ export function bookState(item: Item, viewerId: string): BookState {
 export function showsWhatsApp(state: BookState): boolean {
   return state === "mine" || state === "owner";
 }
+
+/** The username (ADR 0009). Trimmed and lower-cased before anything compares it. */
+export const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
+
+/** What any page may know about the signed-in person. */
+export const viewerSchema = profileSchema.pick({ id: true, first_name: true, is_admin: true });
+
+/** What you may know about yourself: the viewer, plus your own email. Returned by /api/me only. */
+export const meSchema = viewerSchema.extend({ email: emailSchema });
+
+export const signInSchema = z.object({ email: emailSchema, password: z.string().min(1) });
+
+/** A new account, as Rob fills it in. The password is the one-time one he hands over. */
+export const newProfileSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(12, "at least 12 characters"),
+  first_name: z.string().trim().min(1).max(40),
+  whatsapp_number: profileSchema.shape.whatsapp_number,
+});
+
+export type Viewer = z.infer<typeof viewerSchema>;
+export type Me = z.infer<typeof meSchema>;
+export type NewProfile = z.infer<typeof newProfileSchema>;

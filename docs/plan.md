@@ -34,7 +34,7 @@ This table is closed. Changing a row is a conversation with Rob and an ADR, not 
 | Age bands | 0-3, 4-6, 7-9, 10+ | Matches how people actually talk about kids' books |
 | Look | Deliberately plain. One font, one size. Hierarchy from spacing alone | See [ADR 0003](adr/0003-no-component-kit.md) |
 | Database | Neon Postgres with Drizzle, migration files from the first table | See [ADR 0002](adr/0002-neon-not-supabase.md) |
-| Auth | Our own `users` table, scrypt hashes, invites by hand | Invite-only with no sign-up is a table and a cookie. A framework would be more code, not less |
+| Auth | Our own `profiles` table, scrypt hashes, invites by hand. The username is an email address, used for nothing else | Invite-only with no sign-up is a table and a cookie. A framework would be more code, not less. Email because everyone has one and it makes the WhatsApp number do only its one job ([ADR 0009](adr/0009-sign-in-with-email.md)) |
 | Repo | Public, MIT | Other neighbourhoods should be able to take it. It also keeps us honest about what we store |
 
 ## Open questions
@@ -46,7 +46,7 @@ Rob's to answer. An agent that needs one of these answered stops and asks.
 | Should a reservation get a gentle nudge after a week? | Decided against expiry. A nudge is undesigned |
 | Toys and clothes: same model, different filters? | Same data model is the assumption. Undesigned |
 | Consent to share WhatsApp numbers | Proposed at invite time, so reserving never surprises anyone. Not built |
-| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn |
+| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in and the profile (`/account`) are built; the invite screen is next; "requests" is still undesigned |
 
 ---
 
