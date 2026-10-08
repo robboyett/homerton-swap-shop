@@ -19,3 +19,9 @@ Ofcom reserves `07700 900000`–`07700 900999` for use in drama and fiction. The
 What it costs: the gate only knows UK mobiles. An international number, a landline, or a number split across two lines of source would pass, so `REVIEW.md`'s third pass still reads the diff with human eyes.
 
 What it does not change: addresses have no field at all, which is a stronger guarantee than a gate (`docs/plan.md`). Phone numbers need the gate because, unlike addresses, we genuinely do store them.
+
+**Amended 8 October 2026: the one exempt file uses numbers that cannot be allocated.** Publishing the repo made the exemption worth a second look. `scripts/__tests__/no-real-numbers.test.mjs` is skipped by the gate, because a test that proves an out-of-range number is blocked has to contain one; it held invented mobiles from live ranges, and the gate's own source comment held another inside a hash example. Those look exactly like somebody's number, and the whole argument of this ADR is that we cannot know whose. They are now built on the 070 personal-numbering prefix with every remaining digit zero: 070 is not a mobile range at all, and an all-zero subscriber number is never allocated. Two near-misses either side of the reserved block stay, because proving the predicate's edges is what the test is for.
+
+Writing this is how the rule proved itself. The first draft quoted one of the offending numbers to explain the problem, and the commit was refused. The second named the safe replacement instead, and was refused again — the gate knows only the drama range, so a doc may describe a number but never write one. Hence the wording above, which names prefixes and shapes rather than digits. A gate that is awkward to write around is a gate that works.
+
+What it costs: nothing. What it does not change: the exemption is still one file by exact path, never a glob over tests.
