@@ -1,17 +1,19 @@
 <script setup lang="ts">
 /**
- * A cover: 2:3, two coloured shapes, and a 5% spine strip down the left (docs/ui.md).
- *
- * The six shape designs are ported from the design canvas (docs/design/Main.dc.html) and are
- * Phase 1 stand-ins for real cover art. In Phase 3 a real cover_url replaces all of this and
- * `variant` goes away with it.
+ * A cover: 2:3 with a 5% spine strip down the left (docs/ui.md). Real art when the book has
+ * any; otherwise one of the canvas's fifty coloured designs, chosen by the book's id
+ * (shared/covers.ts). The link around it carries the accessible name, so the image has none.
  */
-import type { CoverVariant, MockCover } from "~~/shared/fixtures";
+import { type CoverVariant, coverFor } from "~~/shared/covers";
+import type { ShelfBook } from "~~/shared/schema";
 
 const props = defineProps<{
-  mock: MockCover;
+  book: Pick<ShelfBook, "id" | "cover_url" | "photo_url">;
   reserved?: boolean;
 }>();
+
+const art = computed(() => props.book.photo_url ?? props.book.cover_url);
+const cover = computed(() => coverFor(props.book.id));
 
 /** Each design returns two absolutely-positioned shapes, the second usually a highlight. */
 const DESIGNS: Record<CoverVariant, (fg: string) => [string, string]> = {
@@ -41,13 +43,16 @@ const DESIGNS: Record<CoverVariant, (fg: string) => [string, string]> = {
   ],
 };
 
-const shapes = computed(() => DESIGNS[props.mock.variant](props.mock.fg));
+const shapes = computed(() => DESIGNS[cover.value.variant](cover.value.fg));
 </script>
 
 <template>
-  <span class="cover" :class="{ 'cover--reserved': reserved }" :style="{ background: mock.bg }">
-    <span class="cover__shape" :style="shapes[0]" />
-    <span class="cover__shape" :style="shapes[1]" />
+  <span class="cover" :class="{ 'cover--reserved': reserved }" :style="{ background: cover.bg }">
+    <img v-if="art" class="cover__art" :src="art" alt="" loading="lazy" >
+    <template v-else>
+      <span class="cover__shape" :style="shapes[0]" />
+      <span class="cover__shape" :style="shapes[1]" />
+    </template>
     <span class="cover__spine" />
   </span>
 </template>

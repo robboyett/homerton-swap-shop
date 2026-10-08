@@ -90,7 +90,10 @@ export type Item = z.infer<typeof itemSchema>;
  */
 export type BookState = "available" | "mine" | "other" | "owner" | "collected";
 
-export function bookState(item: Item, viewerId: string): BookState {
+export function bookState(
+  item: Pick<Item, "status" | "reserved_by" | "owner_id">,
+  viewerId: string,
+): BookState {
   if (item.status === "collected") return "collected";
   if (item.status === "available") return "available";
   if (item.reserved_by === viewerId) return "mine";
@@ -125,3 +128,38 @@ export const newProfileSchema = z.object({
 export type Viewer = z.infer<typeof viewerSchema>;
 export type Me = z.infer<typeof meSchema>;
 export type NewProfile = z.infer<typeof newProfileSchema>;
+
+/**
+ * A book as the shelf shows it. Nothing about who owns it or who has asked for it: the grid
+ * needs only the status, to fade it. This is the only item shape a list route may return.
+ */
+export const shelfBookSchema = itemSchema.pick({
+  id: true,
+  kind: true,
+  title: true,
+  author: true,
+  genre: true,
+  age_band: true,
+  status: true,
+  cover_url: true,
+  photo_url: true,
+  approx_count: true,
+});
+
+/**
+ * A book as its page shows it to one particular viewer. The projection is rule 4 of
+ * docs/data.md made into a shape: `contact` is the other side of a live reservation and null
+ * for everyone else, and `reserved_by` and `owner_id` are not here at all.
+ */
+export const bookPageSchema = shelfBookSchema.extend({
+  blurb: itemSchema.shape.blurb,
+  created_at: itemSchema.shape.created_at,
+  owner_first_name: z.string(),
+  state: z.enum(["available", "mine", "other", "owner", "collected"]),
+  contact: profileSchema.pick({ first_name: true, whatsapp_number: true }).nullable(),
+  /** Collected only: whether this viewer is one of the two who may say "not collected after all". */
+  can_undo: z.boolean(),
+});
+
+export type ShelfBook = z.infer<typeof shelfBookSchema>;
+export type BookPage = z.infer<typeof bookPageSchema>;

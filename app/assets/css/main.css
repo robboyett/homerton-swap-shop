@@ -255,6 +255,14 @@ button {
   position: absolute;
 }
 
+.cover__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .cover__spine {
   position: absolute;
   left: 0;
@@ -350,6 +358,11 @@ button {
   text-decoration: underline;
 }
 
+.text-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .tick {
   display: flex;
   align-items: center;
@@ -430,28 +443,9 @@ button {
   flex: 0 0 16px;
 }
 
-/* ---- the demo switch (Phase 1 only; removed in Phase 2, ADR 0004) ---- */
-
-.demo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 16px;
-  margin-top: 40px;
-}
-
 /* The footer's "how it works" is the phone's only route to it; above 700px the nav has it. */
 @media (min-width: 700px) {
   .site-nav__narrow {
     display: none;
   }
-}
-
-/* The demo row's pressed state, so it reads like the filters above it. */
-.demo .text-button[aria-pressed="true"] {
-  text-decoration: underline;
-}
-
-.demo .text-button[aria-pressed="false"] {
-  text-decoration: none;
 }

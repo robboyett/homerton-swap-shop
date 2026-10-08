@@ -63,6 +63,5 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 
 | Page | Divergence | Why |
 |---|---|---|
-| Book detail | "The Lighthouse Mouse" reads ages 0-3, where `Book-desktop.dc.html` says 4-6 | The canvas disagrees with itself: its own grid lists that book as 0-3. We follow the grid, so the shelf and the detail page agree |
-| Book detail | The demo switch's fourth option reads "priya's view", built from the owner's name rather than hard-coded | Same words as the canvas for this book, and correct for every other one. The whole row goes in Phase 2 (ADR 0004) |
+| Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id | Rob asked that blank covers stay colourful like the mocks (8 Oct). Real art replaces it as soon as a book has a `cover_url` or `photo_url` |
 | Browse, phone | "add books" is plain text, not a link | The add flow is Phase 3. In this design a link and a span look identical until you hover one |
