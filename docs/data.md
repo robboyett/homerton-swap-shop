@@ -67,7 +67,7 @@ Authorisation is in `server/services/`, not in the pages, and not in the databas
 
 ## Seed data
 
-Fixtures and seeds use invented first names (`priya`, `sam`) and WhatsApp numbers from the Ofcom drama range `07700 900000`–`07700 900999`. `pnpm check` blocks anything else. Cover art in fixtures is the coloured CSS shapes from the design canvas, not real covers.
+Fixtures and seeds use invented first names (`priya`, `sam`) and WhatsApp numbers from the Ofcom drama range `07700 900000`–`07700 900999`. `pnpm check` blocks anything else. A book with no cover art draws one of the coloured designs from the design canvas (`shared/covers.ts`), never a real cover we do not have.
 
 ## Open questions
 

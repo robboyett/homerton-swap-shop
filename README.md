@@ -8,7 +8,7 @@ It's deliberately plain: white, one font, one type size, and covers doing all th
 
 ## Status
 
-Phase 2 — it remembers, and it's ours. Sign-in is live; the shelf still reads fixtures until the next PR. The current phase is always in [docs/phase.md](docs/phase.md).
+Phase 2 — it remembers, and it's ours. Sign-in is live and the shelf reads the database; adding books is next. The current phase is always in [docs/phase.md](docs/phase.md).
 
 | Phase | What it proves |
 |---|---|

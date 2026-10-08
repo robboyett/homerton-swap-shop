@@ -12,7 +12,12 @@ const id = String(route.params.id);
 const { data, error, refresh } = await useFetch(`/api/items/${id}`);
 
 if (error.value || !data.value) {
-  throw createError({ statusCode: 404, statusMessage: "no such book", fatal: true });
+  const status = error.value?.statusCode ?? 404;
+  throw createError({
+    statusCode: status,
+    statusMessage: status === 404 ? "no such book" : "something went wrong at our end",
+    fatal: true,
+  });
 }
 
 const book = computed(() => data.value?.book);
@@ -20,10 +25,17 @@ const more = computed(() => data.value?.more ?? []);
 
 const busy = ref(false);
 const note = ref("");
+/** Bumped after every attempt, so the collect tick is remounted unticked if the move failed. */
+const attempts = ref(0);
 
 type Move = "reserve" | "release" | "collect" | "uncollect";
 
-/** Ask for a move. If it was refused, say why and redraw the book as it now stands. */
+type BookPage = NonNullable<typeof book.value>;
+
+/**
+ * Ask for a move. If it was refused, say why and redraw the book as it now stands: a 409
+ * carries the current book for this viewer, so no second request is needed.
+ */
 async function move(which: Move) {
   busy.value = true;
   note.value = "";
@@ -31,13 +43,20 @@ async function move(which: Move) {
     const result = await $fetch(`/api/items/${id}/${which}`, { method: "POST" });
     if (data.value) data.value = { ...data.value, book: result.book };
   } catch (e) {
-    const err = e as { statusCode?: number; data?: { message?: string } };
-    note.value =
-      err.statusCode === 409
-        ? (err.data?.message ?? "that has just changed")
-        : "something went wrong at our end. try again in a moment.";
-    await refresh();
+    const err = e as {
+      statusCode?: number;
+      data?: { message?: string; data?: { book?: BookPage } };
+    };
+    const current = err.data?.data?.book;
+    if (err.statusCode === 409 && current) {
+      note.value = err.data?.message ?? "that has just changed";
+      if (data.value) data.value = { ...data.value, book: current };
+    } else {
+      note.value = "something went wrong at our end. try again in a moment.";
+      await refresh();
+    }
   } finally {
+    attempts.value++;
     busy.value = false;
   }
 }
@@ -110,7 +129,7 @@ useHead({ title: () => `${book.value?.title ?? "book"} · homerton swap shop` })
               message {{ book.contact?.first_name }} on whatsapp
             </a>
             <label class="tick">
-              <input type="checkbox" :disabled="busy" @change="move('collect')" >
+              <input :key="attempts" type="checkbox" :disabled="busy" @change="move('collect')" >
               <span>we've collected it</span>
             </label>
             <div>

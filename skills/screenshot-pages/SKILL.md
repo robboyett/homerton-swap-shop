@@ -17,6 +17,11 @@ Every page except sign-in and how-it-works needs a cookie, and the Chrome extens
 6. **Look at both images** against the matching board in `docs/design/` and the rules in `docs/ui.md`. Say what you saw in the PR.
 7. **Delete the throwaway rows** by email, and confirm both tables are back to what they were. Stop the dev server.
 
+## Two cautions
+
+- The seed and the delete both act on whatever database `.env.local` points at, which is the real one. The only guard is "stop if `profiles` is not empty". Read the count before you write.
+- A run that dies between seeding and deleting leaves throwaway profiles behind, and while they exist `POST /api/first-admin` refuses (the table is not empty). If a run breaks, finish step 7 by hand before anything else.
+
 ## What not to do
 
 - Do not seed into a database that already has real rows, and do not attach test items to Rob's account.

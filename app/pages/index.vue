@@ -42,7 +42,9 @@ useHead({ title: "homerton swap shop" });
           {{ band }}
         </button>
       </div>
-      <span class="filters__count">{{ shown.length }} on the shelf. faded ones are reserved.</span>
+      <span v-if="books.length > 0" class="filters__count">
+        {{ shown.length }} on the shelf. faded ones are reserved.
+      </span>
     </div>
 
     <main v-if="books.length === 0" class="shelf">

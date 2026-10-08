@@ -18,13 +18,14 @@ const moveSchema = z.enum(["reserve", "release", "collect", "uncollect"]);
 
 export default defineEventHandler(async (event) => {
   const viewerId = await requireViewerId(event);
-  const id = getRouterParam(event, "id") ?? "";
+  const id = z.uuid().safeParse(getRouterParam(event, "id"));
+  if (!id.success) throw createError({ statusCode: 404, statusMessage: "no such book" });
   const parsed = moveSchema.safeParse(getRouterParam(event, "move"));
   if (!parsed.success) throw createError({ statusCode: 404, statusMessage: "no such move" });
   const move = MOVES[parsed.data];
 
-  const changed = await move.run(db(), id, viewerId);
-  const book = await bookPage(db(), id, viewerId);
+  const changed = await move.run(db(), id.data, viewerId);
+  const book = await bookPage(db(), id.data, viewerId);
   if (!book) throw createError({ statusCode: 404, statusMessage: "no such book" });
   if (!changed) throw createError({ statusCode: 409, statusMessage: move.refused, data: { book } });
   return { book };
