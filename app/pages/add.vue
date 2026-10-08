@@ -114,7 +114,7 @@ useHead({ title: "add books · homerton swap shop" });
           <input
             v-model="isbn"
             type="text"
-            inputmode="numeric"
+            inputmode="text"
             autocomplete="off"
             placeholder="978…"
             :disabled="busy"
@@ -200,8 +200,12 @@ useHead({ title: "add books · homerton swap shop" });
           publish {{ pile.length }} {{ pile.length === 1 ? "book" : "books" }}
         </button>
         <span>
-          they go on the shelf under your name. the section and ages above are a guess from the
-          library; change them if they look wrong.
+          they go on the shelf under your name.
+          {{
+            current?.cover_url || current?.blurb
+              ? "the section and ages above are a guess from the library; change them if they look wrong."
+              : "check the section and ages above before you publish."
+          }}
         </span>
       </section>
 

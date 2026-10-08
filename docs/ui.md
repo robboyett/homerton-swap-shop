@@ -67,4 +67,3 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 | Add books | The camera frame on `Scan.dc.html` is a text box for the number under the barcode, with "look it up" | The typed-ISBN slice comes before the camera (ADR 0010). Everything below the frame is as drawn |
 | Add books | The chosen book in the pile shows section and age pickers, drawn like the age filter | The board shows them as text, pre-filled. A real lookup only guesses them, and the pile is where the person corrects the guess |
 | Add books | "no barcode? photograph the cover" is not shown; "not found? type the title and author" is | Photographing a cover is Phase 4. Typing is the fallback until then |
-| Browse, phone | "add books" is plain text, not a link | The add flow is Phase 3. In this design a link and a span look identical until you hover one |

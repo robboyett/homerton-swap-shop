@@ -30,19 +30,22 @@ export type Shelf = { genre: Genre; age_band: AgeBand };
 /** Where a book probably goes. Subjects first, then size. The pile is where it gets corrected. */
 export function guessShelf(subjects: string[], pages: number | null): Shelf {
   const s = subjects.join(" | ").toLowerCase();
-  if (/young adult|teen/.test(s)) return { genre: "young adult", age_band: "10+" };
+  // "Juvenile nonfiction" is how Open Library marks a fact book; "fiction" alone must not match it.
+  const nonfiction = /\bnon-?fiction\b/.test(s);
+  const fiction = /(?<!non-?)\bfiction\b/.test(s);
+  if (/young adult|\bteens?\b|\bteenage/.test(s)) return { genre: "young adult", age_band: "10+" };
   if (/picture book|board book/.test(s)) return { genre: "picture books", age_band: "0-3" };
-  if (/early reader|beginning reader|easy reader|first reader|phonics|readers\b|level \d/.test(s)) {
+  if (/early reader|beginning reader|easy reader|first reader|phonics|\blevel \d/.test(s)) {
     return { genre: "early readers", age_band: "4-6" };
   }
-  if (/fantasy|magic|wizard|dragon|adventure|quest|monsters/.test(s)) {
-    return { genre: "fantasy and adventure", age_band: "7-9" };
-  }
-  if (
-    /science|nature|space|dinosaur|facts|nonfiction|non-fiction|encyclopedia/.test(s) &&
-    !/fiction/.test(s)
-  ) {
+  const factual =
+    /science|nature|\bspace\b|dinosaur|\bfacts\b|encyclopedia|questions and answers/.test(s) ||
+    nonfiction;
+  if (factual && (nonfiction || !fiction)) {
     return { genre: "science and nature", age_band: "4-6" };
+  }
+  if (/fantasy|\bmagic\b|wizard|\bdragons?\b|adventure|\bquests?\b|\bmonsters\b/.test(s)) {
+    return { genre: "fantasy and adventure", age_band: "7-9" };
   }
   if (pages !== null && pages <= 48) return { genre: "picture books", age_band: "0-3" };
   if (pages !== null && pages <= 120) return { genre: "early readers", age_band: "4-6" };

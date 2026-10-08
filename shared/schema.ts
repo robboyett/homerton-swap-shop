@@ -175,11 +175,12 @@ export const isbnSchema = z
 
 /** A book about to be published from the pile: what the lookup found, or what was typed. */
 export const newBookSchema = z.object({
-  isbn: z.string().nullable(),
+  isbn: isbnSchema.nullable(),
   title: z.string().trim().min(1).max(200),
   author: z.string().trim().max(200).nullable(),
   blurb: z.string().max(1000).nullable(),
-  cover_url: z.url().nullable(),
+  /** Open Library's cover service and nowhere else (docs/data.md): every neighbour sees this image. */
+  cover_url: z.url({ protocol: /^https$/, hostname: /^covers\.openlibrary\.org$/ }).nullable(),
   genre: genreSchema,
   age_band: ageBandSchema,
 });

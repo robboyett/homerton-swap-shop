@@ -57,6 +57,32 @@ describe("guessShelf", () => {
   });
 });
 
+describe("guessShelf, the cases that went wrong first", () => {
+  it("knows a fact book when Open Library marks it the usual way", () => {
+    const facts = { genre: "science and nature", age_band: "4-6" };
+    expect(guessShelf(["Dinosaurs", "Juvenile nonfiction"], 64)).toEqual(facts);
+    expect(guessShelf(["Science", "Juvenile nonfiction", "Questions and answers"], 48)).toEqual(
+      facts,
+    );
+    expect(guessShelf(["Space", "Juvenile literature"], 32)).toEqual(facts);
+    expect(guessShelf(["History", "Juvenile nonfiction"], 120)).toEqual(facts);
+  });
+
+  it("is not fooled by words inside other words", () => {
+    expect(guessShelf(["Thirteen colonies", "Juvenile fiction"], 200).genre).not.toBe(
+      "young adult",
+    );
+    expect(guessShelf(["Dragonflies", "Juvenile nonfiction"], 32).genre).toBe("science and nature");
+    expect(guessShelf(["Young readers", "Juvenile fiction"], 180)).toEqual({
+      genre: "chapter books",
+      age_band: "7-9",
+    });
+    expect(guessShelf(["Magic tricks", "Juvenile nonfiction"], 64).genre).toBe(
+      "science and nature",
+    );
+  });
+});
+
 describe("blurbFrom", () => {
   it("takes the first paragraph, as a string or a value object, and trims long ones", () => {
     expect(blurbFrom("A mouse.\n\nMore about the mouse.")).toBe("A mouse.");
