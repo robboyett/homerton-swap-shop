@@ -1,6 +1,6 @@
 # Any invited household can add items, not only Rob
 
-**Date:** 8 October 2026 · **Status:** accepted (Rob, 8 Oct)
+**Date:** 8 October 2026 · **Status:** accepted (Rob, 8 Oct) · **Amended by:** [ADR 0010](0010-adding-books-before-the-invite-screen.md) (8 Oct): the invite screen now follows the first add slice
 
 **Context.** The original brief left this open: *"Can invited households add their own items, or only Rob at first? Not yet confirmed."* It stayed open through Phase 0 and Phase 1, and `docs/plan.md` listed it as Rob's to answer.
 
@@ -27,3 +27,5 @@ What it does not change: still invite-only, so "anyone" means anyone Rob has let
 This file does not fix that, and it would be dishonest to claim otherwise. An ADR records a claim; it does not evidence one. "Accepted (Rob, 8 Oct)" is prose, written by the agent, in the same commit as the change — from inside the repo it is indistinguishable from an invention. The second review said so plainly and was right.
 
 What the ADR does is narrower and still worth having: it puts the claim where a reader looks for it, with a date, the reasoning Rob gave, and the option that was turned down, so that anyone who later disagrees argues with a specific paragraph instead of a table cell. That is the most the repo's own convention offers (`skills/write-adr`: "record what he said, with the date"), and ADRs 0002 and 0005 rest on exactly the same footing. Decisions taken in conversation leave no artefact; this is the artefact, not the proof.
+
+**Amended 8 October 2026 (ADR 0010): the invite screen is a Phase 3 slice.** Decision 2 above said Phase 2's admin screen is about invites only. It still is about invites only, but it is no longer in Phase 2: Rob put adding books ahead of it, so his shelf is full before the first neighbour arrives. Point 3's requirement, that adding works for someone who has never seen it, is therefore tested on a stranger a little later than written; ADR 0010 names that as the cost. Still any invited household can add, from the moment adding exists.
