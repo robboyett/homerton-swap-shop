@@ -189,3 +189,13 @@ export const newBookSchema = z.object({
 export const publishSchema = z.object({ books: z.array(newBookSchema).min(1).max(50) });
 
 export type NewBook = z.infer<typeof newBookSchema>;
+
+/**
+ * The ISBN inside a scanned barcode, or null if the code is not a book. The barcode on a book is
+ * an EAN-13 beginning 978 or 979, which is the ISBN-13 itself. Anything else the camera sees
+ * (a price sticker, a toy, a tin of beans) is ignored rather than looked up.
+ */
+export function bookIsbnFromBarcode(text: string): string | null {
+  const digits = text.replace(/\D/g, "");
+  return /^97[89]\d{10}$/.test(digits) ? digits : null;
+}

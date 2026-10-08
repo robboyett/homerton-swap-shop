@@ -6,6 +6,9 @@ When something looks broken, read this first. When you add a way something can f
 
 | Symptom | Cause | What to do |
 |---------|-------|------------|
+| On "add books" there is no camera frame, only the number box | The browser refused the camera: permission was declined, the page is not on HTTPS (Vercel always is; a LAN address in dev is not), or the device has no camera | Allow the camera for the site in the browser's settings and reload. Typing the number always works meanwhile |
+| The camera frame says `starting the camera` and never changes | The video started but the decoder did not: the WebAssembly failed to load (check the network tab for `zxing_reader.wasm`), or the browser is too old for WebAssembly | Reload once. If it persists, type the number; then open an issue with the browser and version |
+| The camera is on but a barcode is never read | Too dark, too close, or the barcode is the shop's price sticker rather than the publisher's (only 978/979 codes are books) | More light, hold it further back, find the barcode that starts 978. Or type the number |
 | Looking a book up says `the library isn't answering` | Open Library is slow or down; each request has an eight-second limit and we send three per book | Wait a minute and try again, or type the title and author in. Nothing is lost: the pile stays in the page until you publish or leave |
 | Looking a book up says `the library hasn't heard of that one` | Open Library has no record for that ISBN, which is common for older British children's books and activity books | Type the title and author; it goes in the pile with a plain cover. If the number was mistyped, try again |
 | A looked-up book lands in the wrong section or age band | The section and ages are a guess from Open Library's subjects and page count (`guessShelf` in `server/services/openlibrary.ts`) | Tap the right one in the pile before publishing. If the same kind of book is guessed wrong twice, adjust the guess |
