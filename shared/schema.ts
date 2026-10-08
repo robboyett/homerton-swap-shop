@@ -206,7 +206,6 @@ export function bookIsbnFromBarcode(text: string): string | null {
  */
 export const memberSchema = meSchema.extend({
   invited_by_first_name: z.string().nullable(),
-  created_at: z.string(),
 });
 
 export const newPasswordSchema = z.object({ password: newProfileSchema.shape.password });

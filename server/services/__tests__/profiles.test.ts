@@ -101,7 +101,6 @@ describe("the admin screen", () => {
       ["priya", "rob", false],
     ]);
     expect(Object.keys(members[0] ?? {}).sort()).toEqual([
-      "created_at",
       "email",
       "first_name",
       "id",

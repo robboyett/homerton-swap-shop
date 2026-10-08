@@ -114,12 +114,11 @@ export async function listMembers(db: Db): Promise<Member[]> {
       is_admin: profiles.isAdmin,
       email: profiles.email,
       invited_by_first_name: inviter.firstName,
-      created_at: profiles.createdAt,
     })
     .from(profiles)
     .leftJoin(inviter, eq(profiles.invitedBy, inviter.id))
-    .orderBy(asc(profiles.createdAt));
-  return rows.map((r) => ({ ...r, created_at: r.created_at.toISOString() }));
+    .orderBy(asc(profiles.createdAt), asc(profiles.id));
+  return rows;
 }
 
 /**
