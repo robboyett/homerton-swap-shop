@@ -33,7 +33,7 @@ const EXEMPT = join("scripts", "__tests__", "no-real-numbers.test.mjs");
 //
 // The boundaries exclude letters as well as digits, so a number has to stand on its own rather
 // than sit inside a longer token. That keeps ISBNs out (they are preceded by a digit) and also
-// hex and base64 hashes, which are full of digit runs: `4f07911123456abc` is not a phone number.
+// hex and base64 hashes, which are full of digit runs: `4f07700900123abc` is not a phone number.
 const UK_MOBILE = /(?<![\dA-Za-z+])(?:\+?44[\s.()-]*|0)7(?:[\s.()-]*\d){9}(?![\dA-Za-z])/g;
 
 /** The Ofcom drama range, once separators are stripped: 07700 900000-900999. */
