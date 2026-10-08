@@ -11,7 +11,7 @@ import wasmUrl from "zxing-wasm/reader/zxing_reader.wasm?url";
 import { bookIsbnFromBarcode } from "~~/shared/schema";
 
 const props = defineProps<{ paused?: boolean }>();
-const emit = defineEmits<{ found: [isbn: string]; unavailable: [reason: string] }>();
+const emit = defineEmits<{ found: [isbn: string]; unavailable: [] }>();
 
 const video = ref<HTMLVideoElement | null>(null);
 const running = ref(false);
@@ -21,6 +21,14 @@ const INTERVAL_MS = 250;
 /** The same code within this window is one scan, not several. */
 const REPEAT_MS = 4000;
 
+/**
+ * One overrides object for the life of the page, not one per mount: the library compares by
+ * identity, and a new object on each visit to /add would throw the compiled module away.
+ */
+const OVERRIDES = {
+  locateFile: (path: string, prefix: string) => (path.endsWith(".wasm") ? wasmUrl : prefix + path),
+};
+
 let stream: MediaStream | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
 let lastText = "";
@@ -28,7 +36,7 @@ let lastAt = 0;
 
 onMounted(async () => {
   if (!navigator.mediaDevices?.getUserMedia) {
-    emit("unavailable", "no camera here");
+    emit("unavailable");
     return;
   }
   try {
@@ -37,7 +45,7 @@ onMounted(async () => {
       audio: false,
     });
   } catch {
-    emit("unavailable", "camera not allowed");
+    emit("unavailable");
     return;
   }
   const el = video.value;
@@ -45,18 +53,24 @@ onMounted(async () => {
   el.srcObject = stream;
   await el.play().catch(() => undefined);
 
-  const { prepareZXingModule, readBarcodes } = await import("zxing-wasm/reader");
-  prepareZXingModule({
-    overrides: {
-      locateFile: (path: string, prefix: string) =>
-        path.endsWith(".wasm") ? wasmUrl : prefix + path,
-    },
-  });
+  // Load the decoder and its WebAssembly now, not on the first frame: if it cannot load, the
+  // page should fall back to the typed box rather than show a frame that will never read.
+  let readBarcodes: typeof import("zxing-wasm/reader").readBarcodes;
+  try {
+    const reader = await import("zxing-wasm/reader");
+    await reader.prepareZXingModule({ overrides: OVERRIDES, fireImmediately: true });
+    readBarcodes = reader.readBarcodes;
+  } catch {
+    stop();
+    emit("unavailable");
+    return;
+  }
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) {
-    emit("unavailable", "no canvas");
+    stop();
+    emit("unavailable");
     return;
   }
   running.value = true;
@@ -92,11 +106,14 @@ onMounted(async () => {
   timer = setTimeout(tick, INTERVAL_MS);
 });
 
-onBeforeUnmount(() => {
+function stop() {
   running.value = false;
   if (timer) clearTimeout(timer);
   for (const track of stream?.getTracks() ?? []) track.stop();
-});
+  stream = null;
+}
+
+onBeforeUnmount(stop);
 </script>
 
 <template>

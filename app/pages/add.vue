@@ -34,9 +34,12 @@ function add(book: NewBook) {
   typedAuthor.value = "";
 }
 
-/** The camera read a book barcode: look it up as if the number had been typed. */
+/**
+ * The camera read a book barcode: look it up as if the number had been typed. A book already in
+ * the pile is ignored, so a phone still pointed at it does not look it up again every few seconds.
+ */
 async function scanned(code: string) {
-  if (busy.value) return;
+  if (busy.value || pile.value.some((b) => b.isbn === code)) return;
   isbn.value = code;
   await lookup();
 }

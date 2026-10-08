@@ -1,6 +1,6 @@
 # Barcodes are read in the browser with zxing-wasm, served from this site
 
-**Date:** 9 October 2026 · **Status:** accepted
+**Date:** 8 October 2026 · **Status:** accepted
 
 **Context.** The second slice of adding (ADR 0010) is the camera: hold the barcode inside the frame and the ISBN comes out, then the same lookup, pile and publish as typing it. The question was where the reading happens and with what.
 
@@ -17,7 +17,7 @@ The third was always the intended answer: `docs/allowed-deps.txt` has carried `z
 3. **The library lives in `app/`, not behind the seam.** `scripts/seams.mjs` has said since Phase 0 that `zxing-wasm` is deliberately absent from the vendor list: it runs on the camera stream in the browser, the way a browser PDF reader would. There is no server side to put it behind.
 4. **The typed box stays underneath the camera.** Not as a fallback for failure only: a bent paperback in a dim hallway is in `docs/plan.md`'s list of things we will find out the hard way, and typing thirteen digits is always available.
 
-**Consequences.** `package.json` gains `zxing-wasm`; the allow-list already had it. Two runbook rows: the camera needing permission (and HTTPS, which Vercel gives), and the frame that never starts. `docs/ui.md` loses the divergence that said the frame was a text box.
+**Consequences.** `package.json` gains `zxing-wasm`; the allow-list already had it. Three runbook rows: the camera needing permission (and HTTPS, which Vercel gives), the frame that is still waiting, and a barcode that will not read. A decoder that fails to load takes the frame away and leaves the typed box, rather than a frame that looks alive and never reads. `docs/ui.md` loses the divergence that said the frame was a text box.
 
 What it costs: one megabyte on first use, and a slice that cannot be exercised by the gate or a screenshot, only by a phone pointed at a book. The first real test is Rob's.
 
