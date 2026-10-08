@@ -7,6 +7,8 @@ node_modules
 !.env.example
 .vercel
 .DS_Store
+# vue-tsc build mode (project references) writes this at the root. Cache, not source.
+*.tsbuildinfo
 
 # Agent sessions started in their own worktree check the repo out here.
 .claude/worktrees/
