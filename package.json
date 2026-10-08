@@ -17,9 +17,13 @@
     "format": "biome check --write .",
     "typecheck": "nuxt typecheck",
     "test": "vitest run --passWithNoTests",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=.env node_modules/drizzle-kit/bin.cjs migrate",
     "check": "biome check . && nuxt typecheck && vitest run --passWithNoTests && node scripts/deps-allowed.mjs && node scripts/seams.mjs && node scripts/no-real-numbers.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "drizzle-orm": "^0.45.4",
     "nuxt": "^4.5.2",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1",
@@ -27,7 +31,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",
+    "@electric-sql/pglite": "^0.5.8",
     "@types/node": "^26.4.1",
+    "drizzle-kit": "^0.31.11",
     "lefthook": "^2.1.12",
     "typescript": "^5.9.3",
     "vitest": "^5.0.0",

@@ -16,8 +16,8 @@
 - `biome.jsonc`, `lefthook.yml`, `vitest.config.ts` at the root: lint and format, the commit gate, the test runner.
 - `app/`: the Nuxt app. `pages/` are the routes (`index.vue` the shelf, `books/[id].vue` the five states, `how-it-works.vue`), `components/` the three shared pieces (`BookCover`, `SiteHeader`, `SiteFooter`), and `assets/css/main.css` the whole stylesheet (ADR 0003).
 - `shared/`: `schema.ts` is the data truth — the two tables, the closed sets, and `bookState`, which decides who may see whose number. `fixtures.ts` is the Phase 1 shelf of fifty invented books, thrown away in Phase 2 (ADR 0004). Tests in `shared/__tests__/`.
-- `server/services/` (Phase 2): the one seam. The only place a vendor package may be imported; pages and API routes import from here. `server/api/`: routes, thin. `server/db/`: the Drizzle schema and the one Neon client.
-- `drizzle/` (Phase 2): numbered migration files. Never `db:push` against anything that matters (ADR 0002).
+- `server/services/`: the one seam, and the only place a vendor package may be imported; pages and API routes import from here. `items.ts` holds the four moves a reservation can make, each a single conditional UPDATE so the database decides rather than application code. `db/schema.ts` is the Drizzle schema and `db/client.ts` the one Neon client — they sit under `services/` because the seam has no exceptions. `server/api/` (Phase 2): routes, thin.
+- `drizzle/`: numbered migration files, generated and committed. Never `db:push` against anything that matters (ADR 0002). Tests apply these same files to Postgres in-process (ADR 0007), so a migration that would fail in production fails in `pnpm check` first.
 - `skills/`: `write-adr`. Add another only after needing it twice.
 
 Add a top-level folder, add a line here.

@@ -12,4 +12,8 @@ When the list gets long, turn each line into one of three things: a rule in `pnp
 
 8 Oct, Claude: did it a third time, one PR after writing the line above. `git add -A` is reflexive and a note did not stop it. Ignored the folder in `.gitignore` instead. The lesson that generalises: when a rule has failed twice, stop writing it down and make it mechanical — which is what AGENTS.md already says about prose.
 
+8 Oct, review of #6: rule 4 in docs/data.md (numbers are never shown to the wrong person) has no implementation or test in server/services/, because nothing reads yet. The first list or detail query must project the row rather than return it: `bookState` needs `reserved_by` to work out "mine", and `reserved_by` is exactly the field a bystander must not receive. Serialising a whole item row to the client breaks rule 4 the moment it ships.
+
+8 Oct, second review of #6: `nuxt typecheck` had never checked `server/`. The root `tsconfig.json` extended `.nuxt/tsconfig.json`, which is the app project and excludes `../server/**`, so every Phase 2 service file passed the gate untyped: a missing type import in `db/schema.ts` and 28 strict-index errors in the test went unseen. Root tsconfig is now Nuxt 4 project references (`files: []`), which makes typecheck run all four projects. Lesson: when a new top-level folder gets code, prove the gate sees it by breaking something in it on purpose.
+
 <!-- add lines above this comment -->

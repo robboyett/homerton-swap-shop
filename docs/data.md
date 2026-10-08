@@ -6,6 +6,8 @@ From Phase 1, `shared/schema.ts` is the truth and this file explains it. Until t
 
 Two tables. If a third looks necessary, say why before adding it.
 
+**There is also a `neon_auth` schema in the database that is not ours.** Provisioning Neon through the Vercel Marketplace created nine tables implementing a managed auth system — `user`, `session`, `account`, `organization`, `member`, `invitation`, `jwks`, `verification`, `project_config`. We did not ask for it and we do not use it: accounts are `profiles` with scrypt hashes, and `docs/allowed-deps.txt` denies `better-auth` on the grounds that invite-only accounts made by hand are a table and a hash, not a framework. Nothing in `server/` reads or writes that schema. It is left in place because dropping a schema the provider manages risks breaking the integration, not because we want it. See the open question at the foot of this file.
+
 ---
 
 ## 1. profiles
@@ -55,8 +57,8 @@ No condition, no quality, no price, no location, no view count.
 ## The rules the database holds, not the UI
 
 1. **Reserving is atomic.** One statement: set `status = 'reserved'`, `reserved_by = me`, `reserved_at = now()` **where `id = ? and status = 'available'`**. If it updates no rows, someone else won; say so plainly. Two people tapping at the same moment cannot both win.
-2. **Releasing** is allowed to the owner or to `reserved_by`, and only from `reserved`. It returns `available` and clears `reserved_by` and `reserved_at`.
-3. **Collecting** is allowed to `reserved_by`, and only from `reserved`. Undoing it returns to `reserved` with `reserved_by` intact.
+2. **Releasing** is allowed to the owner or to `reserved_by`, from `reserved` **or from `collected`** (ADR 0008). It returns `available` and clears `reserved_by`, `reserved_at` and `collected_at`: a book on the shelf carries no memory of a collection that did not happen.
+3. **Collecting** is allowed to `reserved_by` alone, and only from `reserved`: the person who turned up is the one who knows. **Undoing it is open to the owner as well** (ADR 0008), so a mistaken tick is not a dead end, and returns to `reserved` with `reserved_by` intact.
 4. **Numbers are never shown to the wrong person.** While reserved, the requester sees the owner's number and the owner sees the requester's first name and number. Everyone else sees that it is reserved, not by whom. An available or collected item shows nobody's number.
 5. **Never store or display an address.** There is no field for one, and that is the point.
 
@@ -68,5 +70,6 @@ Fixtures and seeds use invented first names (`priya`, `sam`) and WhatsApp number
 
 ## Open questions
 
+- The unused `neon_auth` schema above: turn the feature off in the Neon or Vercel dashboard, or leave it. Leaving it means a parallel, empty auth system sits beside ours in the same database.
 - Does a collection need its own count of what's left as items go, or is "about 12" enough for its whole life? Assume the latter.
 - Toys and clothes: the assumption is the same `items` table with a different `genre` vocabulary and a different filter. Nothing designed yet.

@@ -19,6 +19,7 @@ h3                          1       nitro peer; pin to nitro's version so servic
 drizzle-orm                 2       neon (ADR 0002)
 drizzle-kit                 2       migration files (ADR 0002)
 @neondatabase/serverless    2       the one database client
+@electric-sql/pglite        2       postgres in-process for tests, so the atomic reserve is proved by `pnpm check` offline (ADR 0007)
 zxing-wasm                  3       barcode scanning in the browser; BarcodeDetector is missing on iOS Safari
 @vercel/blob                3       cover photos and collection photos
 ai                          4       vercel ai sdk on the gateway, for reading a photographed cover
