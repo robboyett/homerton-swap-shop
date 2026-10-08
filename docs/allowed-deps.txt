@@ -1,0 +1,37 @@
+# Dependency allow-list. `pnpm check` fails if package.json lists a dependency that isn't here.
+# Add a line in the same PR as the dependency, with its phase. Lines starting ! are denied:
+# that's a conversation with Rob, not a typo.
+#
+# Phase is the earliest phase the dependency may appear. See AGENTS.md for the phase table.
+#
+# name                      phase   why
+nuxt                        0       app framework
+vue                         0       nuxt peer
+vue-router                  0       nuxt peer
+typescript                  0       pinned to the 5.x line; vue-tsc does not support 7.x yet
+vue-tsc                     0       nuxt typecheck
+@types/node                 0       types for node:crypto and Buffer in server/
+@biomejs/biome              0       lint + format
+lefthook                    0       commit gate
+vitest                      0       tests
+zod                         1       shared/schema.ts, the data truth
+h3                          1       nitro peer; pin to nitro's version so services can import useSession
+drizzle-orm                 2       neon (ADR 0002)
+drizzle-kit                 2       migration files (ADR 0002)
+@neondatabase/serverless    2       the one database client
+zxing-wasm                  3       barcode scanning in the browser; BarcodeDetector is missing on iOS Safari
+@vercel/blob                3       cover photos and collection photos
+ai                          4       vercel ai sdk on the gateway, for reading a photographed cover
+@vercel/functions           4       waitUntil, if a lookup needs to finish after the response
+
+# Denied. Each of these is a conversation.
+!@nuxt/ui                   A component kit would fight the design, which is one font at one size. See ADR 0003.
+!tailwindcss                A utility framework for a stylesheet that fits on a page. Plain CSS in app/assets/css/ is enough. See ADR 0003.
+!vuetify                    A component kit would fight the design, which is one font at one size. See ADR 0003.
+!primevue                   A component kit would fight the design, which is one font at one size. See ADR 0003.
+!element-plus               A component kit would fight the design, which is one font at one size. See ADR 0003.
+!@supabase/supabase-js      We chose Neon. See ADR 0002.
+!better-auth                Invite-only accounts made by hand are a users table and scrypt, not a framework.
+!stripe                     Nothing here is ever for sale. See docs/plan.md.
+!posthog-js                 No analytics on a neighbours' site.
+!posthog-node               No analytics on a neighbours' site.

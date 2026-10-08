@@ -1,0 +1,83 @@
+# Working plan
+
+**Parent:** [AGENTS.md](../AGENTS.md)
+**Status:** live. Update the decisions table as choices change.
+
+An invite-only local site where Homerton neighbours give away kids' books (later toys and clothes) for free. Rob is the admin and moderator. A WhatsApp group runs alongside it for community and support; the site is where things are listed and reserved.
+
+The data shape is in [data.md](data.md). The look is in [ui.md](ui.md), and the screens are in [design/](design/). Decisions and their reasons are in [adr/](adr/).
+
+---
+
+## Decided
+
+This table is closed. Changing a row is a conversation with Rob and an ADR, not a PR.
+
+| Decision | Choice | Why |
+|---|---|---|
+| Money | None, anywhere. Free only | It's a neighbourly swap, not a marketplace. Money changes what people expect of each other |
+| Who can join | Invite only. Rob creates accounts by hand | Being on the site assumes being in the WhatsApp group. Hand-made accounts are a hundred people, not a growth problem |
+| Addresses | Never on the site | People share them privately in WhatsApp when they choose to. Nothing to leak if we never hold it |
+| Condition or quality | No field | If it is readable, it is good enough. A quality field invites judgement nobody needs |
+| Reserving | Immediate on tapping "I'd like this" | Two people asking for the same book is the thing that sours a swap. First tap wins, visibly |
+| After reserving | The owner's WhatsApp link appears for the requester | The site hands over to the conversation. It never tries to be the conversation |
+| Undoing | Either side can put it back on the shelf, any time | Plans change. Nobody should have to ask permission to step back |
+| Collecting | The requester ticks "we've collected it"; undoable | The person who knows is the person who turned up |
+| Reservation expiry | None | A nudge after a week is an option, not a decision. See the open questions |
+| Adding a book | Scan the barcode, look it up, review a pile, publish in one go | The barcode is the only thing that makes giving away twenty books bearable |
+| No barcode | Photograph the cover; a vision model reads title and author, then the same lookup | Rare enough to be the fallback, common enough to need one |
+| A series or collection | One post, a photo, a rough count | Twelve Beast Quest books are one decision, not twelve |
+| Browsing | All covers at once in a grid, sectioned by genre, filtered by age band | Covers are how a parent chooses. Age is the only filter that matters |
+| Reserved items | Stay in the grid, faded | Seeing what has gone is part of seeing the shelf |
+| Age bands | 0-3, 4-6, 7-9, 10+ | Matches how people actually talk about kids' books |
+| Look | Deliberately plain. One font, one size. Hierarchy from spacing alone | See [ADR 0003](adr/0003-no-component-kit.md) |
+| Database | Neon Postgres with Drizzle, migration files from the first table | See [ADR 0002](adr/0002-neon-not-supabase.md) |
+| Auth | Our own `users` table, scrypt hashes, invites by hand | Invite-only with no sign-up is a table and a cookie. A framework would be more code, not less |
+| Repo | Public, MIT | Other neighbourhoods should be able to take it. It also keeps us honest about what we store |
+
+## Open questions
+
+Rob's to answer. An agent that needs one of these answered stops and asks.
+
+| Question | Where it stands |
+|---|---|
+| Can invited households add their own items, or only Rob at first? | Not confirmed. Changes who sees "add books" in the nav, and the Phase 3 scope |
+| Should a reservation get a gentle nudge after a week? | Decided against expiry. A nudge is undesigned |
+| Toys and clothes: same model, different filters? | Same data model is the assumption. Undesigned |
+| Consent to share WhatsApp numbers | Proposed at invite time, so reserving never surprises anyone. Not built |
+| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn |
+
+---
+
+## The phases
+
+The table in [AGENTS.md](../AGENTS.md) is the enforced version; `docs/phase.md` holds the current number. What each one is for:
+
+| Phase | What it proves |
+|---|---|
+| **0** | The workplace: one contract, one command, a review, and the design in the repo. No product code |
+| **1** | The shelf on a URL. The grid, the age filter, genre sections, book detail in all five states, how it works. Fixture items, no database, no accounts |
+| **2** | It remembers, and it's ours. Neon, invites, sign-in, real items, and the reserve / release / collected flow |
+| **3** | Adding a book is one scan. Camera, barcode, Open Library, the pile, publish |
+| **4** | The long tail. Cover photos through a vision model, collections, toys and clothes |
+
+**Phase 1 is the shelf, not accounts,** which reverses the order in the original brief. The reason is in [ADR 0004](adr/0004-the-shelf-before-accounts.md): the look is the risky part, and an invite-only site with no shelf can't be shown to anyone.
+
+## How a reservation works
+
+The five states a book can be in, which are the five states the design draws:
+
+1. **available** — anyone signed in sees "I'd like this".
+2. **reserved by you** — you see the owner's WhatsApp link, a "we've collected it" tick, and "put it back on the shelf".
+3. **reserved by someone else** — you see that it is reserved. Not by whom.
+4. **reserved, and you are the owner** — you see the requester's first name, their WhatsApp link, and "put it back on the shelf".
+5. **collected** — off the shelf, with "not collected after all" to undo.
+
+The rule that matters: **reserving is atomic.** One statement sets `reserved` and `reserved_by` only if the status is still `available`, so two people tapping at the same moment cannot both win. It gets a test before it gets a UI.
+
+## Things we'll find out the hard way
+
+- Whether people tick "we've collected it" at all, or whether books sit reserved forever.
+- Whether Open Library has covers for British children's books from the 1990s.
+- Whether a phone camera can read a barcode on a bent paperback in a dim hallway.
+- Whether anyone gives away a book without Rob asking them to.

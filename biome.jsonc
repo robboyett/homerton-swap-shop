@@ -1,0 +1,32 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    // docs/ holds the design canvas: generated HTML and Claude Design's runtime, never app code.
+    "includes": ["**", "!docs", "!.nuxt", "!.output", "!public", "!node_modules"]
+  },
+  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "linter": { "enabled": true, "rules": { "preset": "recommended" } },
+  "javascript": { "formatter": { "quoteStyle": "double" } },
+  "overrides": [
+    {
+      // Page filenames are routes: `index.vue` and `[id].vue` are named by Nuxt's convention,
+      // not by us, so the multi-word component rule has nothing to say about them.
+      "includes": ["app/pages/**"],
+      "linter": { "rules": { "style": { "useVueMultiWordComponentNames": "off" } } }
+    },
+    {
+      // <script setup> exports to the template; Biome can't see that, so unused-* is noise in .vue files.
+      "includes": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off",
+            "noUnusedFunctionParameters": "off"
+          }
+        }
+      }
+    }
+  ]
+}

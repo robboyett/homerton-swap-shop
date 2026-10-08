@@ -1,0 +1,42 @@
+{
+  "name": "homerton-swap-shop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@10.11.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare && (test -d .git && lefthook install || true)",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run --passWithNoTests",
+    "check": "biome check . && nuxt typecheck && vitest run --passWithNoTests && node scripts/deps-allowed.mjs && node scripts/seams.mjs && node scripts/no-real-numbers.mjs"
+  },
+  "dependencies": {
+    "nuxt": "^4.5.2",
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.12",
+    "@types/node": "^26.4.1",
+    "lefthook": "^2.1.12",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0",
+    "vue-tsc": "^3.3.11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lefthook"
+    ]
+  }
+}

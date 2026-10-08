@@ -1,0 +1,65 @@
+<script setup lang="ts">
+/** Browse: every cover at once, sectioned by genre, filtered by age band (docs/ui.md). */
+import { ITEMS } from "~~/shared/fixtures";
+import { AGE_BANDS, GENRES } from "~~/shared/schema";
+
+const FILTERS = ["all", ...AGE_BANDS] as const;
+type Filter = (typeof FILTERS)[number];
+
+const age = ref<Filter>("all");
+
+const shown = computed(() => ITEMS.filter((i) => age.value === "all" || i.age_band === age.value));
+
+/** Genre order comes from the schema, so a section can never appear in a surprising place. */
+const sections = computed(() =>
+  GENRES.map((name) => ({ name, books: shown.value.filter((i) => i.genre === name) })).filter(
+    (s) => s.books.length > 0,
+  ),
+);
+
+useHead({ title: "homerton swap shop" });
+</script>
+
+<template>
+  <div class="page">
+    <SiteHeader />
+
+    <div class="filters">
+      <div class="filters__ages">
+        <span>age</span>
+        <button
+          v-for="band in FILTERS"
+          :key="band"
+          type="button"
+          class="filter"
+          :aria-pressed="age === band"
+          @click="age = band"
+        >
+          {{ band }}
+        </button>
+      </div>
+      <span class="filters__count">{{ shown.length }} on the shelf. faded ones are reserved.</span>
+    </div>
+
+    <main class="shelf">
+      <section v-for="section in sections" :key="section.name" class="section">
+        <div class="section__head">
+          <h2>{{ section.name }}</h2>
+          <span>{{ section.books.length }}</span>
+        </div>
+        <div class="grid">
+          <NuxtLink
+            v-for="bookItem in section.books"
+            :key="bookItem.id"
+            :to="`/books/${bookItem.id}`"
+            :aria-label="`${bookItem.title}, ages ${bookItem.age_band}${bookItem.status === 'reserved' ? ', reserved' : ''}`"
+          >
+            <BookCover :mock="bookItem.mock" :reserved="bookItem.status === 'reserved'" />
+          </NuxtLink>
+        </div>
+      </section>
+    </main>
+
+    <SiteFooter />
+  </div>
+</template>

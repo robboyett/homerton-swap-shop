@@ -1,0 +1,424 @@
+/*
+ * The whole stylesheet. One font, one size, one weight, two colours; hierarchy from spacing
+ * alone (docs/ui.md, ADR 0003). If a change wants a second size or a bold, it is the wrong
+ * change — reach for spacing instead.
+ *
+ * The breakpoint is 700px: below it the phone boards in docs/design/, above it the desktop ones.
+ */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
+
+:root {
+  --ground: #ffffff;
+  --ink: #262626;
+  --spine: rgba(0, 0, 0, 0.14);
+  --cover-shadow: 0 1px 1px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font: inherit;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-underline-offset: 4px;
+}
+
+/* Keyboard focus has to be visible; nothing else in the design is coloured, so it is the ink. */
+:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ---- page ---- */
+
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+@media (min-width: 700px) {
+  .page {
+    padding: 32px 48px 48px;
+  }
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px 32px;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+}
+
+/* Nav items are padded for a thumb on a phone and tight on desktop, as the canvas draws them. */
+.site-nav > * {
+  padding: 12px 0;
+}
+
+@media (min-width: 700px) {
+  .site-nav > * {
+    padding: 0;
+  }
+}
+
+/* The page you are on is underlined. Exact, so a book page underlines nothing, as drawn. */
+.site-nav a.router-link-exact-active {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* The phone boards carry brand + "add books" only; "how it works" moves to the footer. */
+.site-nav__wide {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .site-nav__wide {
+    display: inline;
+  }
+}
+
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 56px;
+}
+
+@media (min-width: 700px) {
+  .site-footer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 32px;
+    margin-top: 72px;
+  }
+}
+
+/* ---- the shelf ---- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 32px;
+  margin-top: 24px;
+}
+
+@media (min-width: 700px) {
+  .filters {
+    margin-top: 56px;
+  }
+}
+
+/* The phone board drops the count line: the sections carry their own counts just below. */
+.filters__count {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .filters__count {
+    display: inline;
+  }
+}
+
+.filters__ages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+
+@media (min-width: 700px) {
+  .filters__ages {
+    gap: 8px 20px;
+  }
+}
+
+/* Padded for a thumb on a phone, tight on desktop: both as the canvas draws them. */
+.filter {
+  padding: 10px 0;
+}
+
+@media (min-width: 700px) {
+  .filter {
+    padding: 0;
+  }
+}
+
+.filter[aria-pressed="true"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 32px;
+}
+
+@media (min-width: 700px) {
+  .shelf {
+    gap: 48px;
+    margin-top: 56px;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 700px) {
+  .section {
+    gap: 16px;
+  }
+}
+
+.section__head {
+  display: flex;
+  gap: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 20px;
+  }
+}
+
+/* ---- covers ---- */
+
+.cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: var(--cover-shadow);
+}
+
+.cover--reserved {
+  opacity: 0.35;
+}
+
+.cover__shape {
+  position: absolute;
+}
+
+.cover__spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5%;
+  height: 100%;
+  background: var(--spine);
+}
+
+/* ---- book detail ---- */
+
+.book {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  margin-top: 32px;
+}
+
+.book__cover {
+  width: 168px;
+}
+
+.book__body {
+  width: 100%;
+}
+
+@media (min-width: 700px) {
+  .book {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px 64px;
+  }
+
+  .book__cover {
+    flex: 0 0 auto;
+    width: 280px;
+  }
+
+  .book__body {
+    flex: 1 1 320px;
+    max-width: 480px;
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.stack--gap {
+  gap: 12px;
+}
+
+.mt-28 {
+  margin-top: 28px;
+}
+
+.mt-36 {
+  margin-top: 36px;
+}
+
+.mt-40 {
+  margin-top: 40px;
+}
+
+.mt-56 {
+  margin-top: 56px;
+}
+
+.mt-72 {
+  margin-top: 72px;
+}
+
+/* ---- buttons ---- */
+
+.button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ground);
+  text-align: left;
+}
+
+.button:hover {
+  text-decoration: none;
+}
+
+.text-button {
+  padding: 8px 0;
+  text-decoration: underline;
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.tick input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+/* ---- how it works ---- */
+
+.explain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 48px;
+  margin-top: 56px;
+}
+
+.explain__head {
+  flex: 0 0 200px;
+}
+
+.explain__body {
+  flex: 1 1 320px;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.explain__step {
+  display: flex;
+  gap: 16px;
+}
+
+.explain__n {
+  flex: 0 0 16px;
+}
+
+/* ---- the demo switch (Phase 1 only; removed in Phase 2, ADR 0004) ---- */
+
+.demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 16px;
+  margin-top: 40px;
+}
+
+/* The footer's "how it works" is the phone's only route to it; above 700px the nav has it. */
+@media (min-width: 700px) {
+  .site-nav__narrow {
+    display: none;
+  }
+}
+
+/* The demo row's pressed state, so it reads like the filters above it. */
+.demo .text-button[aria-pressed="true"] {
+  text-decoration: underline;
+}
+
+.demo .text-button[aria-pressed="false"] {
+  text-decoration: none;
+}

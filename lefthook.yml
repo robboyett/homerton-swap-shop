@@ -1,0 +1,5 @@
+# The commit gate. Same command the Stop hook runs, so it holds whichever tool wrote the code.
+pre-commit:
+  commands:
+    check:
+      run: pnpm check

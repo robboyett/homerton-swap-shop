@@ -1,0 +1,17 @@
+node_modules
+.nuxt
+.output
+.data
+.env
+.env.*
+!.env.example
+.vercel
+.DS_Store
+
+# Agent sessions started in their own worktree check the repo out here.
+.claude/worktrees/
+.claude/settings.local.json
+
+# Finder / iCloud conflict copies. Delete them; never commit them.
+* 2
+* 2.*
