@@ -9,11 +9,10 @@
  * so there is nothing behind these checks. docs/data.md holds the rules they implement.
  */
 import { and, eq, inArray, or } from "drizzle-orm";
-import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { items } from "./db/schema";
+import type { Db } from "./db/types";
 
-/** Either driver: Neon over HTTP in production, Postgres in-process in tests (ADR 0007). */
-export type Db = PgDatabase<PgQueryResultHKT>;
+export type { Db };
 
 /**
  * Reserve, if it is still on the shelf.

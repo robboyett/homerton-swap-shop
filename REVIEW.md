@@ -20,7 +20,7 @@ Passes 1 and 2 are partly enforced by `pnpm check`. Here you confirm the gate ra
    Does anything outside `server/services/` reach a vendor, or redo what a service already does? Then: is the behaviour the one `docs/plan.md` decided? Items are free, always. A reservation is immediate, releasable by either side, and undoable after collection. No condition field, no expiry, no money, no addresses.
 
 3. **Anything that shouldn't be public?**
-   This repo is open. Real phone numbers (the gate catches UK mobiles; read the diff for international ones), real names beyond invented first names, addresses, `.env` contents, API keys, session tokens, a real person's WhatsApp link.
+   This repo is open. Real phone numbers (the gate catches UK mobiles; read the diff for international ones), real email addresses (no gate yet; seeds and tests use `@example.com`, ADR 0009), real names beyond invented first names, addresses, `.env` contents, API keys, session tokens, a real person's WhatsApp link.
 
 ---
 

@@ -15,7 +15,8 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { AGE_BANDS, GENRES, STATUSES } from "~~/shared/schema";
+// Relative, not `~~/shared/schema`: drizzle-kit reads this file outside Nuxt and knows no aliases.
+import { AGE_BANDS, GENRES, STATUSES } from "../../../shared/schema";
 
 export const ageBand = pgEnum("age_band", AGE_BANDS);
 export const genre = pgEnum("genre", GENRES);
@@ -24,10 +25,13 @@ export const itemKind = pgEnum("item_kind", ["book", "collection"]);
 
 /**
  * People. Rows are made by Rob on the admin screen, never by sign-up.
- * No email, surname, address or postcode column exists, on purpose (docs/data.md).
+ * No surname, address or postcode column exists, on purpose (docs/data.md). The email is the
+ * username and nothing else (ADR 0009).
  */
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** The username. Lower-cased and trimmed by the service before it gets here (ADR 0009). */
+  email: text("email").notNull().unique(),
   firstName: text("first_name").notNull(),
   /** E.164. Shown only to the other side of a live reservation. */
   whatsappNumber: text("whatsapp_number").notNull(),

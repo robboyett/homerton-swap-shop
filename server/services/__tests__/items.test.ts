@@ -5,13 +5,11 @@
  * migration that production runs. The point is that the guards are in the WHERE clause: every
  * test here asks "did it change a row?", because that is the only thing the caller is told.
  */
-import { PGlite } from "@electric-sql/pglite";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/pglite";
-import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { items, profiles } from "../db/schema";
 import { collect, type Db, release, reserve, uncollect } from "../items";
+import { freshDb } from "./pglite";
 
 let db: Db;
 let owner: string;
@@ -41,16 +39,29 @@ async function freshItem(): Promise<string> {
 }
 
 beforeEach(async () => {
-  const client = new PGlite();
-  db = drizzle(client);
-  await migrate(drizzle(client), { migrationsFolder: "./drizzle" });
+  db = await freshDb();
 
   const people = await db
     .insert(profiles)
     .values([
-      { firstName: "priya", whatsappNumber: "+447700900123", passwordHash: "x" },
-      { firstName: "sam", whatsappNumber: "+447700900456", passwordHash: "x" },
-      { firstName: "alex", whatsappNumber: "+447700900789", passwordHash: "x" },
+      {
+        email: "priya@example.com",
+        firstName: "priya",
+        whatsappNumber: "+447700900123",
+        passwordHash: "x",
+      },
+      {
+        email: "sam@example.com",
+        firstName: "sam",
+        whatsappNumber: "+447700900456",
+        passwordHash: "x",
+      },
+      {
+        email: "alex@example.com",
+        firstName: "alex",
+        whatsappNumber: "+447700900789",
+        passwordHash: "x",
+      },
     ])
     .returning({ id: profiles.id });
   const [p0, p1, p2] = people;

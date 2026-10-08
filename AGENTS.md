@@ -123,6 +123,6 @@ Every gate that blocks prints one line starting `BLOCKED: <name>:` with the reas
 
 ## Stack lock
 
-Nuxt 4 + Nitro + TypeScript + pnpm, plain CSS, hosted on Vercel. Data is Neon + Drizzle with migration files (ADR 0002). Files are Vercel Blob from Phase 3. Auth is our own `users` table with scrypt hashes, invite-only, created by Rob. All vendors behind `server/services/`.
+Nuxt 4 + Nitro + TypeScript + pnpm, plain CSS, hosted on Vercel. Data is Neon + Drizzle with migration files (ADR 0002). Files are Vercel Blob from Phase 3. Auth is our own `profiles` table with scrypt hashes, invite-only, created by Rob; the username is an email address and the session is a sealed cookie (ADR 0009). All vendors behind `server/services/`.
 
 Nothing else without a conversation and an ADR.

@@ -6,9 +6,11 @@
  */
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "./schema";
+import type { Db } from "./types";
 
-let cached: ReturnType<typeof drizzle<typeof schema>> | null = null;
+// No `{ schema }`: the services use the query builder, not the relational API, and leaving it
+// out is what lets this client and the in-process one in tests share the one `Db` type.
+let cached: Db | null = null;
 
 export function db() {
   if (cached) return cached;
@@ -16,6 +18,6 @@ export function db() {
   if (!url) {
     throw new Error("DATABASE_URL is not set. Copy .env.example to .env; see docs/runbook.md.");
   }
-  cached = drizzle(neon(url), { schema });
+  cached = drizzle(neon(url));
   return cached;
 }

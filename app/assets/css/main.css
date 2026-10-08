@@ -364,6 +364,39 @@ button {
   accent-color: var(--ink);
 }
 
+/* ---- forms: sign in, your account, and the invite screen to come ---- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 360px;
+  margin-top: 56px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The same box as a primary button: one border, 44px, square corners. */
+.field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  font: inherit;
+  color: inherit;
+  background: var(--ground);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 /* ---- how it works ---- */
 
 .explain {
