@@ -410,6 +410,47 @@ button {
   opacity: 0.5;
 }
 
+/* ---- add books: the pile ---- */
+
+.add {
+  max-width: 360px;
+}
+
+.add .form {
+  margin-top: 40px;
+}
+
+.add .form + .form {
+  margin-top: 24px;
+}
+
+/* Covers in a row, scrolling sideways when there are many; the chosen one is outlined. */
+.pile {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px;
+  margin: -4px;
+}
+
+.pile__slot {
+  flex: 0 0 60px;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.pile__slot[aria-pressed="true"] {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+
 /* ---- how it works ---- */
 
 .explain {

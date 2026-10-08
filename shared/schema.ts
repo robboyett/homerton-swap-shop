@@ -163,3 +163,28 @@ export const bookPageSchema = shelfBookSchema.extend({
 
 export type ShelfBook = z.infer<typeof shelfBookSchema>;
 export type BookPage = z.infer<typeof bookPageSchema>;
+
+/**
+ * An ISBN as a person types it: spaces and hyphens allowed, ten or thirteen characters once
+ * they are gone, a trailing X allowed on a ten. Normalised to what Open Library expects.
+ */
+export const isbnSchema = z
+  .string()
+  .transform((s) => s.replace(/[\s-]/g, "").toUpperCase())
+  .pipe(z.string().regex(/^(\d{13}|\d{9}[\dX])$/, "an isbn is 10 or 13 digits"));
+
+/** A book about to be published from the pile: what the lookup found, or what was typed. */
+export const newBookSchema = z.object({
+  isbn: z.string().nullable(),
+  title: z.string().trim().min(1).max(200),
+  author: z.string().trim().max(200).nullable(),
+  blurb: z.string().max(1000).nullable(),
+  cover_url: z.url().nullable(),
+  genre: genreSchema,
+  age_band: ageBandSchema,
+});
+
+/** The pile, published in one go. Fifty is more than anyone's arms can carry. */
+export const publishSchema = z.object({ books: z.array(newBookSchema).min(1).max(50) });
+
+export type NewBook = z.infer<typeof newBookSchema>;

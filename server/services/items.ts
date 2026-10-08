@@ -10,7 +10,7 @@
  */
 import { and, desc, eq, inArray, ne, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { type BookPage, bookState, type ShelfBook } from "../../shared/schema";
+import { type BookPage, bookState, type NewBook, type ShelfBook } from "../../shared/schema";
 import { items, profiles } from "./db/schema";
 import type { Db } from "./db/types";
 
@@ -31,13 +31,16 @@ const shelfColumns = {
   approx_count: items.approxCount,
 };
 
-/** The shelf: everything not yet collected, newest first. Carries nothing about people. */
+/**
+ * The shelf: everything not yet collected, newest first, then by title so a pile published in
+ * one go keeps a steady order. Carries nothing about people.
+ */
 export async function listShelf(db: Db): Promise<ShelfBook[]> {
   return db
     .select(shelfColumns)
     .from(items)
     .where(ne(items.status, "collected"))
-    .orderBy(desc(items.createdAt));
+    .orderBy(desc(items.createdAt), items.title);
 }
 
 /** Up to ten more from the same section, for the foot of a book page. */
@@ -50,7 +53,7 @@ export async function moreInGenre(
     .select(shelfColumns)
     .from(items)
     .where(and(eq(items.genre, genre), ne(items.status, "collected"), ne(items.id, exceptId)))
-    .orderBy(desc(items.createdAt))
+    .orderBy(desc(items.createdAt), items.title)
     .limit(10);
 }
 
@@ -105,6 +108,33 @@ export async function bookPage(db: Db, itemId: string, viewerId: string): Promis
     contact,
     can_undo: state === "collected" && (owner_id === viewerId || reserved_by === viewerId),
   };
+}
+
+/* ---- adding ---- */
+
+/**
+ * Publish the pile. Whoever is signed in owns every book in it (ADR 0006); each goes on the
+ * shelf as available. One INSERT, so a pile of twenty is one round trip. Returns the new ids.
+ */
+export async function createItems(db: Db, ownerId: string, books: NewBook[]): Promise<string[]> {
+  if (books.length === 0) return [];
+  const rows = await db
+    .insert(items)
+    .values(
+      books.map((b) => ({
+        ownerId,
+        kind: "book" as const,
+        isbn: b.isbn,
+        title: b.title,
+        author: b.author,
+        blurb: b.blurb,
+        genre: b.genre,
+        ageBand: b.age_band,
+        coverUrl: b.cover_url,
+      })),
+    )
+    .returning({ id: items.id });
+  return rows.map((r) => r.id);
 }
 
 /* ---- the four moves ---- */
