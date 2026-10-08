@@ -44,7 +44,7 @@ The dependency side is enforced by `pnpm check` against `docs/allowed-deps.txt`.
 | **0** | The workplace | This file, `CLAUDE.md`, `docs/`, `.claude/`, Biome, lefthook, `pnpm check`, `REVIEW.md`, an empty Nuxt shell |
 | **1** | The shelf, on a URL | Pages, the browse grid with the age filter and genre sections, book detail and its five states, how it works, fixture items, `shared/schema.ts`, plain CSS, one Vercel URL |
 | **2** | It remembers, and it's ours | Neon, Drizzle with migration files, a `users` table with scrypt hashes, the admin invite screen, real items, and the reserve / release / collected flow with the atomic rule |
-| **3** | Adding a book is one scan, for anyone | Barcode scanning in the browser, Open Library lookup, the pile, publish, Vercel Blob for photos. Any invited household can add (ADR 0006), so this has to work for someone who has never seen it before, on their own phone |
+| **3** | Adding a book is one scan, for anyone. Any invited household can add (ADR 0006), so it has to work for someone who has never seen it, on their own phone | Barcode scanning in the browser, Open Library lookup, the pile, publish, Vercel Blob for photos |
 | **4** | The long tail | Cover-photo fallback through a vision model, collection posts, toys and clothes filters |
 
 **Out until an ADR says otherwise:** a component kit (ADR 0003), Tailwind, Supabase, selling or money of any kind, public sign-up, addresses on the site, a condition or quality field, the WhatsApp Business API, reservation expiry, analytics.
