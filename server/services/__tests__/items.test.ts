@@ -11,6 +11,7 @@ import { items, profiles } from "../db/schema";
 import {
   bookPage,
   collect,
+  createItems,
   type Db,
   listShelf,
   moreInGenre,
@@ -291,5 +292,45 @@ describe("what a page may see (docs/data.md, rule 4)", () => {
     const second = await freshItem();
     const more = await moreInGenre(db, "picture books", itemId);
     expect(more.map((b) => b.id)).toEqual([second]);
+  });
+});
+
+describe("publishing a pile", () => {
+  it("puts every book on the shelf as available, owned by whoever published", async () => {
+    const ids = await createItems(db, asker, [
+      {
+        isbn: "9780333710937",
+        title: "The Gruffalo",
+        author: "Julia Donaldson",
+        blurb: "A mouse took a stroll.",
+        cover_url: "https://covers.openlibrary.org/b/id/10549185-L.jpg",
+        genre: "picture books",
+        age_band: "0-3",
+      },
+      {
+        isbn: null,
+        title: "A typed-in one",
+        author: null,
+        blurb: null,
+        cover_url: null,
+        genre: "chapter books",
+        age_band: "7-9",
+      },
+    ]);
+    expect(ids).toHaveLength(2);
+    const page = await bookPage(db, ids[0] ?? "", bystander);
+    expect(page?.state).toBe("available");
+    expect(page?.owner_first_name).toBe("sam");
+    expect(page?.cover_url).toContain("covers.openlibrary.org");
+    const shelf = await listShelf(db);
+    expect(shelf.map((b) => b.title)).toEqual([
+      "A typed-in one",
+      "The Gruffalo",
+      "The Lighthouse Mouse",
+    ]);
+  });
+
+  it("publishes nothing from an empty pile", async () => {
+    expect(await createItems(db, asker, [])).toEqual([]);
   });
 });
