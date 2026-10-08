@@ -6,6 +6,8 @@ From Phase 1, `shared/schema.ts` is the truth and this file explains it. Until t
 
 Two tables. If a third looks necessary, say why before adding it.
 
+**There is also a `neon_auth` schema in the database that is not ours.** Provisioning Neon through the Vercel Marketplace created nine tables implementing a managed auth system — `user`, `session`, `account`, `organization`, `member`, `invitation`, `jwks`, `verification`, `project_config`. We did not ask for it and we do not use it: accounts are `profiles` with scrypt hashes, and `docs/allowed-deps.txt` denies `better-auth` on the grounds that invite-only accounts made by hand are a table and a hash, not a framework. Nothing in `server/` reads or writes that schema. It is left in place because dropping a schema the provider manages risks breaking the integration, not because we want it. See the open question at the foot of this file.
+
 ---
 
 ## 1. profiles
@@ -68,5 +70,6 @@ Fixtures and seeds use invented first names (`priya`, `sam`) and WhatsApp number
 
 ## Open questions
 
+- The unused `neon_auth` schema above: turn the feature off in the Neon or Vercel dashboard, or leave it. Leaving it means a parallel, empty auth system sits beside ours in the same database.
 - Does a collection need its own count of what's left as items go, or is "about 12" enough for its whole life? Assume the latter.
 - Toys and clothes: the assumption is the same `items` table with a different `genre` vocabulary and a different filter. Nothing designed yet.
