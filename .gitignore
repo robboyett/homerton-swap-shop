@@ -12,6 +12,12 @@ node_modules
 .claude/worktrees/
 .claude/settings.local.json
 
+# The original handoff folder: Rob's brief and a byte-identical copy of docs/design/, kept on
+# disk until Rob deletes it. `git add -A` swept it into a commit three times, once of which
+# reached main, so remembering is clearly not working. Ignored rather than trusted. Note that
+# ignoring it does not remove the copy already in public history. Delete the folder, then these lines.
+docs/original-swapshop-handoff/
+
 # Finder / iCloud conflict copies. Delete them; never commit them.
 * 2
 * 2.*
