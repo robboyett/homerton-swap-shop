@@ -1,6 +1,6 @@
 # Adding books comes before the invite screen
 
-**Date:** 8 October 2026 · **Status:** accepted (Rob, 8 Oct)
+**Date:** 8 October 2026 · **Status:** accepted (Rob, 8 Oct) · **Amends:** [ADR 0004](0004-the-shelf-before-accounts.md) decision 2, and [ADR 0006](0006-any-household-can-add.md) on what Phase 2's admin screen is for
 
 **Context.** With sign-in merged (#7, ADR 0009), Phase 2 had two pieces left: the shelf and book pages reading the database with the reserve flow live, and the admin invite screen. Adding a book was all of Phase 3.
 

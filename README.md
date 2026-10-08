@@ -8,14 +8,14 @@ It's deliberately plain: white, one font, one type size, and covers doing all th
 
 ## Status
 
-Phase 0 — the workplace. No product code yet. The current phase is in [docs/phase.md](docs/phase.md).
+Phase 2 — it remembers, and it's ours. Sign-in is live; the shelf still reads fixtures until the next PR. The current phase is always in [docs/phase.md](docs/phase.md).
 
 | Phase | What it proves |
 |---|---|
 | 0 | The workplace: one contract, one command, a review, the design in the repo |
 | 1 | The shelf on a URL. Grid, age filter, book detail in five states. Fixtures, no database |
-| 2 | It remembers, and it's ours. Neon, invites, sign-in, and the reserve flow |
-| 3 | Adding a book is one scan, for anyone. Camera, barcode, Open Library, publish |
+| 2 | It remembers, and it's ours. Neon, sign-in, real items, and the reserve flow |
+| 3 | Adding a book is one scan, for anyone. Typed ISBN first, then the camera, then the invite screen. Open Library, the pile, publish |
 | 4 | Cover photos read by a vision model, collections, toys and clothes |
 
 ## Start here
