@@ -19,8 +19,15 @@ let asker: string;
 let bystander: string;
 let itemId: string;
 
+/** The one row an insert or select was expected to produce. Throws rather than returns undefined. */
+function one<T>(rows: T[]): T {
+  const [row] = rows;
+  if (!row) throw new Error("expected one row, got none");
+  return row;
+}
+
 async function freshItem(): Promise<string> {
-  const [row] = await db
+  const rows = await db
     .insert(items)
     .values({
       ownerId: owner,
@@ -30,7 +37,7 @@ async function freshItem(): Promise<string> {
       ageBand: "4-6",
     })
     .returning({ id: items.id });
-  return row.id;
+  return one(rows).id;
 }
 
 beforeEach(async () => {
@@ -46,15 +53,16 @@ beforeEach(async () => {
       { firstName: "alex", whatsappNumber: "+447700900789", passwordHash: "x" },
     ])
     .returning({ id: profiles.id });
-  owner = people[0].id;
-  asker = people[1].id;
-  bystander = people[2].id;
+  const [p0, p1, p2] = people;
+  if (!p0 || !p1 || !p2) throw new Error("expected three profiles");
+  owner = p0.id;
+  asker = p1.id;
+  bystander = p2.id;
   itemId = await freshItem();
 });
 
 async function statusOf(id: string) {
-  const [row] = await db.select().from(items).where(eq(items.id, id));
-  return row;
+  return one(await db.select().from(items).where(eq(items.id, id)));
 }
 
 describe("reserve", () => {
@@ -84,10 +92,9 @@ describe("reserve", () => {
     expect(await reserve(db, itemId, bystander)).toBe(false);
   });
 
-  // Nothing in docs/plan.md says whether an owner may reserve their own book. The guard is on
-  // status alone, so today they can. Pinned here so the behaviour is visible rather than
-  // accidental; if Rob decides otherwise, `owner_id <> viewer` joins the WHERE clause.
-  it("currently lets an owner reserve their own item, which no decision covers", async () => {
+  // Decided, not accidental: docs/plan.md "Reserving your own book" (ADR 0008). The guard stays
+  // on status alone.
+  it("lets an owner reserve their own book (ADR 0008)", async () => {
     expect(await reserve(db, itemId, owner)).toBe(true);
   });
 });

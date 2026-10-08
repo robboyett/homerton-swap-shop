@@ -6,8 +6,8 @@
  * (AGENTS.md). There is one seam and no exception to it.
  */
 import {
+  type AnyPgColumn,
   boolean,
-  index,
   integer,
   pgEnum,
   pgTable,
