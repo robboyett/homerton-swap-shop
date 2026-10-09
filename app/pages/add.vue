@@ -4,12 +4,48 @@
  * publish in one go (docs/plan.md, "Adding a book"; the board is docs/design/Scan.dc.html).
  * Not found? Type the title and author, and it goes in the pile with a plain cover.
  */
-import { AGE_BANDS, GENRES, isbnSchema, type NewBook } from "~~/shared/schema";
+import { AGE_BANDS, GENRES, isbnSchema, type NewBook, newBookSchema } from "~~/shared/schema";
 
 const isbn = ref("");
 /** Set once if there is no camera or no permission; the typed box is then the only way in. */
 const cameraOff = ref(false);
 const pile = ref<NewBook[]>([]);
+
+/**
+ * The pile survives a reload. Phones reload background tabs without asking, and twenty scanned
+ * books are twenty minutes; so the books are kept in this browser until published or taken out.
+ * Photos picked for the pile are not: they live in memory and are picked again if the tab came back.
+ */
+const PILE_KEY = "swapshop-pile";
+const restored = ref(false);
+
+onMounted(() => {
+  try {
+    const saved = window.localStorage.getItem(PILE_KEY);
+    if (!saved) return;
+    const parsed = newBookSchema.array().safeParse(JSON.parse(saved));
+    if (parsed.success && parsed.data.length > 0 && pile.value.length === 0) {
+      pile.value = parsed.data;
+      selected.value = parsed.data.length - 1;
+      restored.value = true;
+    }
+  } catch {
+    // Storage can be missing or refused; the pile then simply starts empty.
+  }
+});
+
+watch(
+  pile,
+  (books) => {
+    try {
+      if (books.length === 0) window.localStorage.removeItem(PILE_KEY);
+      else window.localStorage.setItem(PILE_KEY, JSON.stringify(books));
+    } catch {
+      // Same: a browser that refuses storage still gets a working pile for this visit.
+    }
+  },
+  { deep: true },
+);
 const selected = ref(0);
 const busy = ref(false);
 const note = ref("");
@@ -203,6 +239,9 @@ useHead({ title: "add books · homerton swap shop" });
 
       <section v-if="pile.length > 0" class="stack stack--gap mt-40">
         <span>added {{ pile.length }}</span>
+        <span v-if="restored">
+          your pile from before is back. if you had picked photos for any of these, pick them again.
+        </span>
 
         <div class="pile">
           <button
