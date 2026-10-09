@@ -6,6 +6,25 @@ export default defineNuxtConfig({
     head: {
       title: "homerton swap shop",
       htmlAttrs: { lang: "en" },
+      // What a pasted link shows in WhatsApp, and what a tab or a home screen is called.
+      meta: [
+        {
+          name: "description",
+          content: "neighbours in homerton giving away kids' books, for free. invite only.",
+        },
+        { property: "og:title", content: "homerton swap shop" },
+        {
+          property: "og:description",
+          content: "neighbours in homerton giving away kids' books, for free. invite only.",
+        },
+        { property: "og:type", content: "website" },
+        { name: "theme-color", content: "#ffffff" },
+      ],
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+        { rel: "manifest", href: "/site.webmanifest" },
+      ],
     },
   },
   runtimeConfig: {

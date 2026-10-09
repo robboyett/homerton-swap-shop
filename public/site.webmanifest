@@ -1,0 +1,13 @@
+{
+  "name": "homerton swap shop",
+  "short_name": "swap shop",
+  "description": "neighbours in homerton giving away kids' books, for free. invite only.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

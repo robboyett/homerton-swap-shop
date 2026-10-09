@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The same cover on a white ground, for home screens that crop icons to a shape. -->
+  <rect width="64" height="64" fill="#ffffff"/>
+  <rect x="21" y="14" width="22" height="36" rx="1.5" fill="#262626"/>
+  <rect x="21" y="14" width="2" height="36" fill="#ffffff" fill-opacity="0.22"/>
+</svg>
