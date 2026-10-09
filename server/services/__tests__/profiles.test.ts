@@ -80,7 +80,6 @@ describe("accounts", () => {
         ...rob,
         email: "priya@example.com",
         first_name: " priya ",
-        whatsapp_number: "+447700900123",
       },
       { invitedBy: admin?.id ?? null },
     );
@@ -106,7 +105,7 @@ describe("the admin screen", () => {
     const admin = await createFirstAdmin(db, rob);
     await createProfile(
       db,
-      { ...rob, email: "priya@example.com", first_name: "priya", whatsapp_number: "+447700900123" },
+      { ...rob, email: "priya@example.com", first_name: "priya" },
       { invitedBy: admin?.id ?? null },
     );
     const members = await listMembers(db);
@@ -184,9 +183,11 @@ describe("moderation of people (ADR 0012)", () => {
     const admin = await createFirstAdmin(db, rob);
     const priya = await createProfile(
       db,
-      { ...rob, email: "priya@example.com", first_name: "priya", whatsapp_number: "+447700900123" },
+      { ...rob, email: "priya@example.com", first_name: "priya" },
       { invitedBy: admin?.id ?? null },
     );
+    // She gives her number at first sign-in; without it she could not reserve Rob's book below.
+    expect(await setNumber(db, priya.id, "+447700900123")).toBe(true);
     const [priyas] = await createItems(db, priya.id, [book("Priya's book")]);
     const [robs] = await createItems(db, admin?.id ?? "", [book("Rob's book")]);
     await reserve(db, robs ?? "", priya.id);
@@ -218,12 +219,11 @@ describe("moderation of people (ADR 0012)", () => {
 describe("the first sign-in (ADR 0014)", () => {
   it("makes an account with no number, which the person gives once", async () => {
     const admin = await createFirstAdmin(db, rob);
-    const { whatsapp_number: _dropped, ...noNumber } = {
-      ...rob,
-      email: "priya@example.com",
-      first_name: "priya",
-    };
-    const priya = await createProfile(db, noNumber, { invitedBy: admin?.id ?? null });
+    const priya = await createProfile(
+      db,
+      { ...rob, email: "priya@example.com", first_name: "priya" },
+      { invitedBy: admin?.id ?? null },
+    );
     expect(priya.has_number).toBe(false);
     expect((await listMembers(db)).find((m) => m.first_name === "priya")?.has_number).toBe(false);
     expect(await setNumber(db, priya.id, "+447700900123")).toBe(true);

@@ -85,7 +85,6 @@ export async function createProfile(
       .values({
         email: normaliseEmail(profile.email),
         firstName: profile.first_name.trim(),
-        whatsappNumber: profile.whatsapp_number ?? null,
         passwordHash: await hashPassword(profile.password),
         isAdmin: options.isAdmin ?? false,
         invitedBy: options.invitedBy,

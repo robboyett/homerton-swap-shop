@@ -23,7 +23,6 @@ const offShelf = computed(() => books.value.filter((b) => b.status === "removed"
 
 const firstName = ref("");
 const email = ref("");
-const number = ref("");
 const password = ref("");
 const busy = ref(false);
 const note = ref("");
@@ -66,7 +65,7 @@ function failed(e: unknown): string {
   const err = e as { statusCode?: number; data?: { message?: string } };
   if (err.statusCode === 409) return err.data?.message ?? "that has just changed.";
   if (err.statusCode === 400)
-    return "check the email, the number (+44 then ten digits) and the password (12 or more).";
+    return "check the email and the password (12 or more); a number, if editing, is +44 then ten digits.";
   return "that didn't save. try again in a moment.";
 }
 
@@ -92,7 +91,6 @@ function invite() {
       body: {
         first_name: firstName.value,
         email: email.value,
-        ...(number.value ? { whatsapp_number: number.value } : {}),
         password: password.value,
       },
     });
@@ -104,7 +102,6 @@ function invite() {
     copied.value = false;
     firstName.value = "";
     email.value = "";
-    number.value = "";
     password.value = onetimePassword(cryptoRandom);
     await refresh();
   });
@@ -194,7 +191,10 @@ useHead({ title: "admin · homerton swap shop" });
       <form class="form" @submit.prevent="invite">
         <div class="stack">
           <h1>invite someone</h1>
-          <span>this makes their account. you then send them the password yourself, in whatsapp.</span>
+          <span>
+            this makes their account. you then send them the password yourself, in whatsapp. they
+            give their own mobile number when they first sign in.
+          </span>
         </div>
 
         <label class="field">
@@ -204,10 +204,6 @@ useHead({ title: "admin · homerton swap shop" });
         <label class="field">
           <span>email (their username)</span>
           <input v-model="email" type="email" autocomplete="off" required >
-        </label>
-        <label class="field">
-          <span>mobile number, if you have it. leave blank and they give it when they first sign in</span>
-          <input v-model="number" type="tel" autocomplete="off" placeholder="+447…" >
         </label>
         <label class="field">
           <span>their password. keep this one or type your own</span>
