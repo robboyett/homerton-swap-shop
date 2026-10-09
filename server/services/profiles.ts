@@ -4,7 +4,7 @@
  * Everything returned from this file is the browser shape from shared/schema.ts, never a row:
  * the row carries a password hash and other people's emails, and neither leaves this folder.
  */
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Me, Member, NewProfile } from "../../shared/schema";
 import { hashPassword, verifyPassword } from "../utils/password";
@@ -148,7 +148,12 @@ export async function setPassword(db: Db, id: string, password: string): Promise
 
 /* ---- moderation (ADR 0012): the caller has already checked the viewer is an admin ---- */
 
-/** A corrected first name, and a new number if one is given. False if there is no such person. */
+/**
+ * A corrected first name, and a new number if one is given. A number can only be corrected, never
+ * supplied for the first time: the first one arrives on the welcome page, where the promise is
+ * read (ADR 0014). False if there is no such person, or if a number is offered for someone who
+ * has not given one yet.
+ */
 export async function updateMember(
   db: Db,
   id: string,
@@ -160,7 +165,12 @@ export async function updateMember(
       firstName: edit.first_name.trim(),
       ...(edit.whatsapp_number ? { whatsappNumber: edit.whatsapp_number } : {}),
     })
-    .where(eq(profiles.id, id))
+    .where(
+      and(
+        eq(profiles.id, id),
+        ...(edit.whatsapp_number ? [isNotNull(profiles.whatsappNumber)] : []),
+      ),
+    )
     .returning({ id: profiles.id });
   return changed.length === 1;
 }

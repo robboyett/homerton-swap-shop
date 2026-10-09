@@ -155,6 +155,8 @@ describe("moderation of people (ADR 0012)", () => {
 
   it("corrects a name or number, and nothing else", async () => {
     const me = await createFirstAdmin(db, rob);
+    // The first admin gives his number on the welcome page like everyone else.
+    expect(await setNumber(db, me?.id ?? "", "+447700900001")).toBe(true);
     expect(
       await updateMember(db, me?.id ?? "", {
         first_name: " robert ",
@@ -164,6 +166,16 @@ describe("moderation of people (ADR 0012)", () => {
     const [row] = await listMembers(db);
     expect(row?.first_name).toBe("robert");
     expect(row?.email).toBe("rob@example.com");
+    // A number can be corrected, never supplied for the first time: that is the welcome page's.
+    const newcomer = await createProfile(
+      db,
+      { ...rob, email: "new@example.com", first_name: "new" },
+      { invitedBy: me?.id ?? null },
+    );
+    expect(
+      await updateMember(db, newcomer.id, { first_name: "new", whatsapp_number: "+447700900003" }),
+    ).toBe(false);
+    expect(await updateMember(db, newcomer.id, { first_name: "newer" })).toBe(true);
     // A name alone leaves the number as it was.
     expect(await updateMember(db, me?.id ?? "", { first_name: "rob" })).toBe(true);
     const [kept] = await db
