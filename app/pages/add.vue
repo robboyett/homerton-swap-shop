@@ -28,6 +28,7 @@ onMounted(() => {
       pile.value = parsed.data;
       selected.value = parsed.data.length - 1;
       restored.value = true;
+      void nextTick(() => tray.value?.scrollTo({ left: tray.value.scrollWidth }));
     }
   } catch {
     // Storage can be missing or refused; the pile then simply starts empty.
@@ -75,13 +76,20 @@ async function pickPhoto(file: File) {
   }
 }
 
+/** The tray of covers, so it can scroll itself to the newest book. */
+const tray = ref<HTMLElement | null>(null);
+
 function add(book: NewBook) {
   if (book.isbn && pile.value.some((b) => b.isbn === book.isbn)) {
     note.value = `"${book.title}" is already in the pile.`;
+    chime("refused");
     return;
   }
   pile.value.push(book);
   selected.value = pile.value.length - 1;
+  chime("added");
+  // The newest cover is at the right-hand end; bring it into view once it exists.
+  void nextTick(() => tray.value?.scrollTo({ left: tray.value.scrollWidth, behavior: "smooth" }));
   isbn.value = "";
   typing.value = false;
   typedTitle.value = "";
@@ -114,6 +122,7 @@ async function lookup() {
     if (status === 404) {
       typing.value = true;
       note.value = "the library hasn't heard of that one. type the title and author instead.";
+      chime("refused");
     } else {
       note.value = "the library isn't answering. try again in a moment, or type it in.";
       typing.value = true;
@@ -169,6 +178,7 @@ async function publish() {
     }
     pile.value = [];
     photos.value = new Map();
+    chime("published");
     if (failed.length > 0) {
       note.value = `published, but the photo for ${failed.join(", ")} didn't save. you can add it from the book's page.`;
       busy.value = false;
@@ -252,7 +262,7 @@ useHead({ title: "add books · homerton swap shop" });
           your pile from before is back. if you had picked photos for any of these, pick them again.
         </span>
 
-        <div class="pile">
+        <div ref="tray" class="pile">
           <button
             v-for="(book, i) in pile"
             :key="book.isbn ?? book.title + i"
