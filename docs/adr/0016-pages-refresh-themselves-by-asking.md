@@ -14,10 +14,10 @@ Three ways to do that:
 
 1. **Pages ask again.** The shelf, a book page and requests refresh every thirty seconds while visible, and at once when the tab regains focus. Nothing is pushed. A change made by somebody else is on your screen within half a minute, or the moment you look back at it.
 2. **A refresh never undoes what you were doing.** It is skipped while one of your own moves is in flight, the age filter stays, the pile is never refreshed at all, and on requests the books you ticked as collected this visit stay in view with their undo.
-3. **The nav says how many are waiting for you.** "requests 2" is the number of your books other people currently hold. It is fetched with every page and refreshed on the same rhythm. Books you have asked for are not counted: those are yours to chase.
+3. **The nav says how many are waiting for you.** "requests 2" is the number of your books other people currently hold. It is fetched when a page opens and refreshed on the same rhythm. Books you have asked for are not counted: those are yours to chase.
 4. **Nothing reaches a closed site.** When your phone is in your pocket, the requester messages you on WhatsApp, which the plan has always said is where the conversation happens. Push notifications are a later decision, taken only if requests turn out to be missed.
 
-**Consequences.** One composable, `useLive`, holds the rhythm; three pages call it. `GET /api/requests/count` and one count query. ADR 0013's "until the list next reloads" now means "until you leave the page", because collected rows are kept across refreshes.
+**Consequences.** One composable, `useLive`, holds the rhythm; three pages and the header call it. A refresh that fails, as a phone waking from a pocket does before its radio is back, puts the data from before back rather than leaving a blank page; that is what point 2 costs in code. `GET /api/requests/count` and one count query. ADR 0013's "until the list next reloads" now means "until you leave the page", because collected rows are kept across refreshes.
 
 What it costs: a request every thirty seconds per open tab, and a delay of up to thirty seconds before another person's move shows. A page left open all day asks about three thousand times, each one a small query; that is the price of no connections to keep alive.
 

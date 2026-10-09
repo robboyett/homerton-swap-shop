@@ -20,4 +20,8 @@ When the list gets long, turn each line into one of three things: a rule in `pnp
 
 8 Oct, Claude, #11: merged while the preview check was still pending. `gh pr checks --watch` returned at once because the Vercel check had not registered yet, and the merge was chained after it with `;` rather than `&&`, so nothing stopped it. The production deploy was green, by luck not design. Until this fails again: wait for the check to appear and read SUCCESS before merging, and never chain a merge after a watch with `;`.
 
+9 Oct, Claude, #21: the same slip as #11, worse. A chained command ran the gate, failed on a type error, skipped the commit, and still merged, because a `;` after the commit step let the merge run on the old head. The reviewed-and-rejected version went to production for the time it took to fix forward. Second time, so it is mechanical now: `scripts/merge.sh <pr>` is the only way a PR gets merged. It refuses a dirty tree, a head that is not the PR head, a Vercel check that is not SUCCESS, and a red gate, in that order.
+
+9 Oct, Claude: a Finder or sync conflict copy renamed `server/api/lookup/` to `lookup 2` on disk. Git saw the original deleted and ignored the copy; Nitro picked the copy up as a route and typecheck failed in a page that had not changed. The runbook row on `* 2` copies covers it; the clone is in `GitHub.nosync` and still got one. If it happens again, find what is syncing the folder.
+
 <!-- add lines above this comment -->

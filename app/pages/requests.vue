@@ -31,7 +31,7 @@ async function refresh() {
   }
   data.value = { ...data.value, asked_for: groups };
 }
-useLive(refresh, () => busy.value);
+useLive({ data, error, refresh, paused: () => busy.value });
 /** Bumped after every attempt, so a failed tick is remounted unticked. */
 const attempts = ref(0);
 
@@ -76,6 +76,11 @@ async function move(book: RequestBook, which: "collect" | "uncollect" | "release
       err.statusCode === 409
         ? (err.data?.message ?? "that has just changed")
         : "something went wrong at our end. try again in a moment.";
+    // A refused undo means the book is no longer collected-by-you: stop re-seating its row.
+    if (err.statusCode === 409) {
+      collected.value.delete(book.id);
+      kept.delete(book.id);
+    }
     await refresh();
   } finally {
     attempts.value++;
