@@ -248,7 +248,13 @@ button {
   box-shadow: var(--cover-shadow);
 }
 
-.cover--reserved {
+/* The cover and, while hovering, its label. Reserved fades the pair. */
+.cover-wrap {
+  position: relative;
+  display: block;
+}
+
+.cover-wrap--reserved {
   opacity: 0.35;
 }
 
@@ -265,18 +271,23 @@ button {
 }
 
 /*
- * The hover label: a slim ink bar along the foot with the title and author, only while a pointer
- * is over the cover, and only on devices that have one. Reserved covers are faded as a whole,
- * so the bar fades with them.
+ * The hover label: a slim ink bar along the foot with the title over the author, only while a
+ * pointer is over the cover, and only on devices that have one. It may overhang the cover to the
+ * right, up to 200px, since grid covers are too narrow for a title; it sits outside the cover's
+ * clipping for that reason, and above the neighbour it overlaps.
  */
 .cover__label {
   position: absolute;
-  right: 0;
   bottom: 0;
   left: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  min-width: 100%;
+  width: max-content;
+  max-width: 200px;
   padding: 4px 8px;
+  border-radius: 0 0 2px 2px;
   background: var(--ink-veil);
   color: var(--ground);
   opacity: 0;
@@ -292,8 +303,8 @@ button {
 }
 
 @media (hover: hover) {
-  .cover:hover .cover__label,
-  a:focus-visible > .cover .cover__label {
+  .cover-wrap:hover .cover__label,
+  a:focus-visible > .cover-wrap .cover__label {
     opacity: 1;
   }
 }

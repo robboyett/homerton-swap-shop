@@ -3,8 +3,9 @@
  * A cover: 2:3 with a 5% spine strip down the left (docs/ui.md). With `labelled`, a slim ink bar
  * with the title over the author rises along the foot while a pointer is over it, and only then:
  * the grid stays clean until you ask (Rob, 9 Oct). Covers in the grid are about a hundred pixels
- * wide, so each line clips rather than wraps; two lines is as tall as "slim" allows. Touch
- * screens never hover; the tap goes to the page. Real art when the book has
+ * wide, too narrow for a title, so the bar may overhang the cover sideways, up to twice its
+ * width, like a label resting on the shelf; that is why it sits outside the cover's clipping.
+ * Touch screens never hover; the tap goes to the page. Real art when the book has
  * any; otherwise one of the canvas's fifty coloured designs, chosen by the book's id
  * (shared/covers.ts). The link around it carries the accessible name, so the image has none.
  */
@@ -54,13 +55,15 @@ const shapes = computed(() => DESIGNS[cover.value.variant](cover.value.fg));
 </script>
 
 <template>
-  <span class="cover" :class="{ 'cover--reserved': reserved }" :style="{ background: cover.bg }">
+  <span class="cover-wrap" :class="{ 'cover-wrap--reserved': reserved }">
+    <span class="cover" :style="{ background: cover.bg }">
     <img v-if="art" class="cover__art" :src="art" alt="" loading="lazy" >
     <template v-else>
       <span class="cover__shape" :style="shapes[0]" />
       <span class="cover__shape" :style="shapes[1]" />
     </template>
     <span class="cover__spine" />
+    </span>
     <span v-if="labelled && book.title" class="cover__label" aria-hidden="true">
       <span class="cover__label-line">{{ book.title }}</span>
       <span v-if="book.author" class="cover__label-line">{{ book.author }}</span>
