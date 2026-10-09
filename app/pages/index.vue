@@ -3,6 +3,7 @@
 import { AGE_BANDS, GENRES } from "~~/shared/schema";
 
 const { data, error, refresh } = await useFetch("/api/items");
+const hovered = useHovered();
 const books = computed(() => data.value?.books ?? []);
 // Other people's moves show here within half a minute, with the filter left alone (ADR 0016).
 useLive({ data, error, refresh });
@@ -65,8 +66,12 @@ useHead({ title: "homerton swap shop" });
             :key="bookItem.id"
             :to="`/books/${bookItem.id}`"
             :aria-label="`${bookItem.title}, ages ${bookItem.age_band}${bookItem.status === 'reserved' ? ', reserved' : ''}`"
+            @mouseenter="hovered = bookItem"
+            @mouseleave="hovered = null"
+            @focus="hovered = bookItem"
+            @blur="hovered = null"
           >
-            <BookCover :book="bookItem" :reserved="bookItem.status === 'reserved'" labelled />
+            <BookCover :book="bookItem" :reserved="bookItem.status === 'reserved'" />
           </NuxtLink>
         </div>
       </section>
