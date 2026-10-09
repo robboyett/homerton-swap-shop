@@ -28,6 +28,7 @@ onMounted(() => {
       pile.value = parsed.data;
       selected.value = parsed.data.length - 1;
       restored.value = true;
+      void nextTick(() => tray.value?.scrollTo({ left: tray.value.scrollWidth }));
     }
   } catch {
     // Storage can be missing or refused; the pile then simply starts empty.
