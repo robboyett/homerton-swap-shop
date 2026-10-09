@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- A book cover, 2:3, with the spine strip the covers on the shelf carry. Ink on nothing. -->
-  <rect x="16" y="8" width="32" height="48" rx="2" fill="#262626"/>
-  <rect x="16" y="8" width="3" height="48" fill="#ffffff" fill-opacity="0.22"/>
+  <!-- A book cover, 2:3, with the spine strip the covers on the shelf carry, on a small white ground
+       so it survives a dark tab strip. -->
+  <rect width="64" height="64" rx="12" fill="#ffffff"/>
+  <rect x="18" y="10" width="28" height="44" rx="2" fill="#262626"/>
+  <rect x="18" y="10" width="3" height="44" fill="#ffffff" fill-opacity="0.22"/>
 </svg>
