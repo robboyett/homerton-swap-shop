@@ -46,11 +46,11 @@ A book, or a collection posted as one.
 | `cover_url` | text, null | Open Library's cover service |
 | `photo_url` | text, null | Vercel Blob. Set once, by any member, on a book that has no `cover_url` and no photo yet ([ADR 0015](adr/0015-anyone-can-fill-a-missing-cover.md)); cleared only by an admin. Collections with a photo are Phase 4 |
 | `approx_count` | integer, null | Collections only. "about 12" |
-| `status` | `available` \| `reserved` \| `collected` \| `removed` | `removed` is an admin's doing, never a member's |
+| `status` | `available` \| `reserved` \| `collected` \| `removed` | `removed` is set by an admin, or by the owner taking their own book down (ADR 0018); never by anyone else |
 | `reserved_by` | uuid → profiles.id, null | |
 | `reserved_at` | timestamptz, null | |
 | `collected_at` | timestamptz, null | |
-| `removed_at` | timestamptz, null | Set by an admin; the book is off the shelf for everyone and the record stays ([ADR 0012](adr/0012-removing-keeps-the-record.md)) |
+| `removed_at` | timestamptz, null | Set by an admin, or by the owner ([ADR 0018](adr/0018-owners-look-after-their-own-books.md)); the book is off the shelf for everyone and the record stays ([ADR 0012](adr/0012-removing-keeps-the-record.md)) |
 | `removed_reason` | text, null | Optional note for the admin's own memory. Shown to admins only |
 | `created_at` | timestamptz | |
 

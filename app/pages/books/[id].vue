@@ -115,6 +115,7 @@ async function withdraw() {
     return;
   }
   busy.value = true;
+  note.value = "";
   try {
     await $fetch(`/api/items/${id}/withdraw`, { method: "POST" });
     await navigateTo("/");
@@ -131,6 +132,7 @@ const reshelving = ref(false);
 const draft = ref<{ genre: BookPage["genre"]; age_band: BookPage["age_band"] } | null>(null);
 function startReshelve() {
   if (!book.value) return;
+  armed.value = false;
   draft.value = { genre: book.value.genre, age_band: book.value.age_band };
   reshelving.value = true;
 }
