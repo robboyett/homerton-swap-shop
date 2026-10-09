@@ -57,12 +57,12 @@ const shapes = computed(() => DESIGNS[cover.value.variant](cover.value.fg));
 <template>
   <span class="cover-wrap" :class="{ 'cover-wrap--reserved': reserved }">
     <span class="cover" :style="{ background: cover.bg }">
-    <img v-if="art" class="cover__art" :src="art" alt="" loading="lazy" >
-    <template v-else>
-      <span class="cover__shape" :style="shapes[0]" />
-      <span class="cover__shape" :style="shapes[1]" />
-    </template>
-    <span class="cover__spine" />
+      <img v-if="art" class="cover__art" :src="art" alt="" loading="lazy" >
+      <template v-else>
+        <span class="cover__shape" :style="shapes[0]" />
+        <span class="cover__shape" :style="shapes[1]" />
+      </template>
+      <span class="cover__spine" />
     </span>
     <span v-if="labelled && book.title" class="cover__label" aria-hidden="true">
       <span class="cover__label-line">{{ book.title }}</span>

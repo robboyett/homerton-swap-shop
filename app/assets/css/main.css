@@ -228,6 +228,8 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  /* A hovered label in the last column is cut at the grid's edge rather than scrolling the page. */
+  overflow-x: clip;
 }
 
 @media (min-width: 700px) {
@@ -252,10 +254,6 @@ button {
 .cover-wrap {
   position: relative;
   display: block;
-}
-
-.cover-wrap--reserved {
-  opacity: 0.35;
 }
 
 .cover__shape {
@@ -283,9 +281,11 @@ button {
   z-index: 1;
   display: flex;
   flex-direction: column;
+  /* At rest it is invisible but still laid out, so it must not be wider than the cover: a 200px
+     box in the last column would push the page sideways. It widens only while shown. */
   min-width: 100%;
   width: max-content;
-  max-width: 200px;
+  max-width: 100%;
   padding: 4px 8px;
   border-radius: 0 0 2px 2px;
   background: var(--ink-veil);
@@ -302,10 +302,24 @@ button {
   text-overflow: ellipsis;
 }
 
+/* On the children, not the wrapper: a faded wrapper would be its own stacking context and put
+   the overhanging label under the next cover. */
+.cover-wrap--reserved > .cover,
+.cover-wrap--reserved > .cover__label {
+  opacity: 0.35;
+}
+
 @media (hover: hover) {
   .cover-wrap:hover .cover__label,
   a:focus-visible > .cover-wrap .cover__label {
+    max-width: 200px;
     opacity: 1;
+  }
+
+  /* Reserved stays faded even while shown; more specific than the rule above, on purpose. */
+  .cover-wrap.cover-wrap--reserved:hover .cover__label,
+  a:focus-visible > .cover-wrap.cover-wrap--reserved .cover__label {
+    opacity: 0.35;
   }
 }
 
