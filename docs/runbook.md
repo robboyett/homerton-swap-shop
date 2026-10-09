@@ -6,6 +6,7 @@ When something looks broken, read this first. When you add a way something can f
 
 | Symptom | Cause | What to do |
 |---------|-------|------------|
+| The pile makes no sound | An iPhone's silent switch is on, or the page has not been touched yet (browsers only let a page make sound after a tap), or the browser has no audio | Tap anything on the page once, or flip the switch. The pile works the same in silence |
 | Someone sees "something went wrong at our end" | A server error the page did not expect: the database not answering, a route throwing, Open Library down in a path that does not catch it. The page shows nothing technical on purpose | The detail is in the Vercel function logs for that minute (`vercel logs`, or the dashboard). Fix the cause; if it is a new way to fail, add its row here |
 | The pile on "add books" came back after a reload, or will not go away | The pile is kept in that browser's storage until it is published or every book is taken out, because phones reload background tabs without asking | Publish it, or take the books out one by one. It is per browser, so a different phone starts empty |
 | A book is "off the shelf" on `/admin` with the reason `taken down by the owner`, and the owner wants it back | Owners can take their own book down but not put it back (ADR 0018) | "put it back on the shelf" on `/admin`, or they add it again |
