@@ -82,7 +82,7 @@ useHead({ title: "homerton swap shop" });
         <details class="filters__details" :open="open" @toggle="open = ($event.target as HTMLDetailsElement).open">
           <summary class="filters__summary">
             <span class="filters__toggle">{{ open ? "hide filters" : "show filters" }}</span>
-            <span v-if="active.length > 0" class="filters__active">{{ active.join(", ") }}</span>
+            <span v-if="active.length > 0">{{ active.join(", ") }}</span>
           </summary>
           <div class="filters__rows">
             <div class="filters__ages">
