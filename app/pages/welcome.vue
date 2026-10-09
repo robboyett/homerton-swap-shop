@@ -9,13 +9,27 @@ const number = ref("");
 const busy = ref(false);
 const note = ref("");
 
+/**
+ * People type numbers the way they say them: "07700 900123", "(0)7700-900123", "+44 7700 900123".
+ * Tidy the typing; what is stored is always +44 and ten digits, which the server insists on.
+ */
+function tidy(typed: string): string {
+  const bare = typed.replace(/[\s\-()]/g, "");
+  if (bare.startsWith("+440")) return `+44${bare.slice(4)}`; // "+44 (0)7700 …"
+  if (bare.startsWith("+")) return bare;
+  if (bare.startsWith("0044")) return `+44${bare.slice(4)}`;
+  if (bare.startsWith("0")) return `+44${bare.slice(1)}`;
+  if (bare.startsWith("44")) return `+${bare}`;
+  return bare;
+}
+
 async function give() {
   busy.value = true;
   note.value = "";
   try {
     const { viewer: me } = await $fetch("/api/me/number", {
       method: "POST",
-      body: { whatsapp_number: number.value.replace(/\s/g, "") },
+      body: { whatsapp_number: tidy(number.value) },
     });
     viewer.value = me;
     await navigateTo("/", { replace: true });
@@ -23,7 +37,7 @@ async function give() {
     const status = (e as { statusCode?: number }).statusCode;
     note.value =
       status === 400
-        ? "that doesn't look like a uk mobile. +44, then the ten digits after the 0."
+        ? "that doesn't look like a uk mobile. 07 and ten more digits, or +44 and ten digits."
         : status === 409
           ? "your number is already set. ask rob if it needs changing."
           : "something went wrong at our end. try again in a moment.";
@@ -76,7 +90,7 @@ useHead({ title: "welcome · homerton swap shop" });
           </span>
         </div>
         <label class="field">
-          <span>+44, then the ten digits after the 0</span>
+          <span>your mobile, with or without the +44</span>
           <input v-model="number" type="tel" autocomplete="tel" placeholder="+447…" required >
         </label>
         <p v-if="note" role="alert">{{ note }}</p>
