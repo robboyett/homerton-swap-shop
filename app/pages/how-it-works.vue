@@ -9,7 +9,7 @@ const getting = [
 ];
 
 const giving = [
-  "add books. scan the barcode and publish. a collection or series can go up as one post, with a photo and a rough count.",
+  "add books. scan the barcode, or type the number under it, and publish. if a book has no picture, add a photo of the cover.",
   "someone reserves it and messages you on whatsapp.",
   "hand it over. if they go quiet, put it back on the shelf.",
 ];
@@ -18,6 +18,7 @@ const good = [
   "everything is free, always. no selling.",
   "your address is never on the site. you share it in whatsapp when you choose to.",
   "a reservation can be undone by you or by the owner at any time, and the book goes back on the shelf.",
+  "everything you've asked for, and everything asked of you, is under requests.",
   "invite only, for homerton.",
 ];
 </script>
@@ -30,13 +31,13 @@ const good = [
       <div class="explain">
         <h1 class="explain__head">how it works</h1>
         <p class="explain__body">
-          a free swap for homerton. books, toys and clothes the kids have grown out of, passed on to
-          neighbours. nobody pays and nobody sells.
+          a free swap for homerton. kids' books they have grown out of, passed on to neighbours.
+          nobody pays and nobody sells.
         </p>
       </div>
 
       <div class="explain">
-        <h2 class="explain__head">getting something</h2>
+        <h2 class="explain__head">getting a book</h2>
         <ol class="explain__body">
           <li v-for="(step, n) in getting" :key="step" class="explain__step">
             <span class="explain__n">{{ n + 1 }}</span>
@@ -46,7 +47,7 @@ const good = [
       </div>
 
       <div class="explain">
-        <h2 class="explain__head">giving something</h2>
+        <h2 class="explain__head">giving a book</h2>
         <ol class="explain__body">
           <li v-for="(step, n) in giving" :key="step" class="explain__step">
             <span class="explain__n">{{ n + 1 }}</span>
