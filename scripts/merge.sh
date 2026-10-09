@@ -34,6 +34,6 @@ if ! pnpm check >/tmp/homerton-merge-check.log 2>&1; then
   echo "BLOCKED: merge: pnpm check failed on this head. Fix the code, not the check." >&2; exit 1
 fi
 title=$(gh pr view "$pr" --json title -q .title)
-gh pr merge "$pr" --squash --delete-branch --subject "$title (#$pr)"
+gh pr merge "$pr" --squash --delete-branch --match-head-commit "$pr_head" --subject "$title (#$pr)"
 git switch main && git pull --ff-only
 echo "merged #$pr: $title"

@@ -14,6 +14,10 @@ const {
 });
 useLive({ data: live, error, refresh, paused: () => !viewer.value });
 const waiting = computed(() => (viewer.value ? (live.value?.waiting ?? 0) : 0));
+// On sign-out the count is nobody's: zero it, so the next person on this phone never sees it.
+watch(viewer, (me) => {
+  if (!me) live.value = { waiting: 0 };
+});
 </script>
 
 <template>
