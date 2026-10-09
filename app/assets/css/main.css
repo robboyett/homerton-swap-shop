@@ -228,8 +228,11 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
-  /* A hovered label in the last column is cut at the grid's edge rather than scrolling the page. */
+  /* A hovered label in the last column is cut at the grid's edge rather than scrolling the page.
+     The clip sits 8px outside the columns so the edge covers keep their shadow. */
   overflow-x: clip;
+  margin: 0 -8px;
+  padding: 0 8px;
 }
 
 @media (min-width: 700px) {
