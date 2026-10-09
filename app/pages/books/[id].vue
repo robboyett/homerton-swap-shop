@@ -9,6 +9,7 @@
 const route = useRoute();
 const id = String(route.params.id);
 const viewer = useViewer();
+const hovered = useHovered();
 
 const { data, error, refresh } = await useFetch(`/api/items/${id}`);
 
@@ -254,8 +255,12 @@ useHead({ title: () => `${book.value?.title ?? "book"} · homerton swap shop` })
           :key="other.id"
           :to="`/books/${other.id}`"
           :aria-label="`${other.title}, ages ${other.age_band}${other.status === 'reserved' ? ', reserved' : ''}`"
+          @mouseenter="hovered = other"
+          @mouseleave="hovered = null"
+          @focus="hovered = other"
+          @blur="hovered = null"
         >
-          <BookCover :book="other" :reserved="other.status === 'reserved'" labelled />
+          <BookCover :book="other" :reserved="other.status === 'reserved'" />
         </NuxtLink>
       </div>
     </section>
