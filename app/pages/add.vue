@@ -38,8 +38,12 @@ watch(
   pile,
   (books) => {
     try {
-      if (books.length === 0) window.localStorage.removeItem(PILE_KEY);
-      else window.localStorage.setItem(PILE_KEY, JSON.stringify(books));
+      if (books.length === 0) {
+        window.localStorage.removeItem(PILE_KEY);
+        restored.value = false;
+      } else {
+        window.localStorage.setItem(PILE_KEY, JSON.stringify(books));
+      }
     } catch {
       // Same: a browser that refuses storage still gets a working pile for this visit.
     }
