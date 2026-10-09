@@ -11,6 +11,7 @@
   --ground: #ffffff;
   --ink: #262626;
   --spine: rgba(0, 0, 0, 0.14);
+  --ink-veil: rgba(38, 38, 38, 0.88);
   --cover-shadow: 0 1px 1px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -227,6 +228,11 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  /* A hovered label in the last column is cut at the grid's edge rather than scrolling the page.
+     The clip sits 8px outside the columns so the edge covers keep their shadow. */
+  overflow-x: clip;
+  margin: 0 -8px;
+  padding: 0 8px;
 }
 
 @media (min-width: 700px) {
@@ -247,8 +253,10 @@ button {
   box-shadow: var(--cover-shadow);
 }
 
-.cover--reserved {
-  opacity: 0.35;
+/* The cover and, while hovering, its label. Reserved fades the pair. */
+.cover-wrap {
+  position: relative;
+  display: block;
 }
 
 .cover__shape {
@@ -261,6 +269,61 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/*
+ * The hover label: a slim ink bar along the foot with the title over the author, only while a
+ * pointer is over the cover, and only on devices that have one. It may overhang the cover to the
+ * right, up to 200px, since grid covers are too narrow for a title; it sits outside the cover's
+ * clipping for that reason, and above the neighbour it overlaps.
+ */
+.cover__label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  /* At rest it is invisible but still laid out, so it must not be wider than the cover: a 200px
+     box in the last column would push the page sideways. It widens only while shown. */
+  min-width: 100%;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 0 0 2px 2px;
+  background: var(--ink-veil);
+  color: var(--ground);
+  opacity: 0;
+  transition: opacity 120ms;
+  pointer-events: none;
+}
+
+/* Title over author, each on one line; covers are narrow, so each clips rather than wraps. */
+.cover__label-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* On the children, not the wrapper: a faded wrapper would be its own stacking context and put
+   the overhanging label under the next cover. */
+.cover-wrap--reserved > .cover,
+.cover-wrap--reserved > .cover__label {
+  opacity: 0.35;
+}
+
+@media (hover: hover) {
+  .cover-wrap:hover .cover__label,
+  a:focus-visible > .cover-wrap .cover__label {
+    max-width: 200px;
+    opacity: 1;
+  }
+
+  /* Reserved stays faded even while shown; more specific than the rule above, on purpose. */
+  .cover-wrap.cover-wrap--reserved:hover .cover__label,
+  a:focus-visible > .cover-wrap.cover-wrap--reserved .cover__label {
+    opacity: 0.35;
+  }
 }
 
 .cover__spine {
