@@ -140,10 +140,8 @@ button {
 
 .filters {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px 32px;
+  flex-direction: column;
+  gap: 8px;
   margin-top: 24px;
 }
 
@@ -153,28 +151,62 @@ button {
   }
 }
 
-/* Age row over section row (ADR 0017). */
+/*
+ * The filters sit in a plain <details>, closed by default (ADR 0017, amended). Its summary is one
+ * line: "show filters", then what is set, with "clear filters" beside it when anything is.
+ */
+.filters__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 16px;
+}
+
+.filters__details {
+  flex: 1 1 auto;
+}
+
+.filters__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 0;
+}
+
+.filters__summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .filters__summary {
+    padding: 0;
+  }
+}
+
+.filters__toggle {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Age row, section row, whose row. */
 .filters__rows {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-top: 8px;
 }
 
 @media (min-width: 700px) {
   .filters__rows {
     gap: 8px;
+    padding-top: 12px;
   }
 }
 
-/* The count and the "hide mine" toggle. The phone board drops the count line, since the
-   sections carry their own counts just below; the toggle stays. */
-.filters__count {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 16px;
-}
-
+/* The phone board drops the count line: the sections carry their own counts just below. */
 .filters__total {
   display: none;
 }
