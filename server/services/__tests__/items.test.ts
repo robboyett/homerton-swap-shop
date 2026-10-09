@@ -23,9 +23,11 @@ import {
   removeItem,
   requestsFor,
   reserve,
+  reshelve,
   restoreItem,
   setPhoto,
   uncollect,
+  withdrawItem,
 } from "../items";
 import { freshDb } from "./pglite";
 
@@ -545,5 +547,30 @@ describe("which shelf books are yours (ADR 0017)", () => {
     const forNosy = await listShelf(db, bystander);
     expect(forNosy.every((b) => b.yours === false)).toBe(true);
     expect(JSON.stringify(forNosy)).not.toContain("owner");
+  });
+});
+
+describe("an owner looking after their own book (ADR 0018)", () => {
+  it("can take it off the shelf, ending any reservation; nobody else can", async () => {
+    await reserve(db, itemId, asker);
+    expect(await withdrawItem(db, itemId, asker)).toBe(false);
+    expect(await withdrawItem(db, itemId, bystander)).toBe(false);
+    expect(await withdrawItem(db, itemId, owner)).toBe(true);
+    expect(await withdrawItem(db, itemId, owner)).toBe(false);
+    expect(await listShelf(db, asker)).toEqual([]);
+    expect(await bookPage(db, itemId, asker)).toBeNull();
+    const [row] = await listForAdmin(db, owner);
+    expect(row?.removed_reason).toBe("taken down by the owner");
+    expect(row?.status).toBe("removed");
+  });
+
+  it("can move it to another section or age; nobody else can", async () => {
+    const to = { genre: "early readers" as const, age_band: "7-9" as const };
+    expect(await reshelve(db, itemId, asker, to)).toBe(false);
+    expect(await reshelve(db, itemId, owner, to)).toBe(true);
+    const page = await bookPage(db, itemId, bystander);
+    expect([page?.genre, page?.age_band]).toEqual(["early readers", "7-9"]);
+    await removeItem(db, itemId, null);
+    expect(await reshelve(db, itemId, owner, to)).toBe(false);
   });
 });

@@ -6,6 +6,7 @@ When something looks broken, read this first. When you add a way something can f
 
 | Symptom | Cause | What to do |
 |---------|-------|------------|
+| A book is "off the shelf" on `/admin` with the reason `taken down by the owner`, and the owner wants it back | Owners can take their own book down but not put it back (ADR 0018) | "put it back on the shelf" on `/admin`, or they add it again |
 | A book someone else just reserved or removed is still showing | Pages ask again every thirty seconds while visible, and when the tab comes back (ADR 0016). Nothing is pushed | Wait half a minute, or switch away and back. If it never updates, the tab is in the background or the fetch is failing: open the network tab |
 | Adding a photo answers `that photo is too big` or `that is not a photo` | The server takes images up to 3 MB; the phone shrinks a photo to 1200px JPEG before sending, so this means the shrink did not run (an old browser) or the file was not an image | Try a different photo, or a different browser. The plain cover stays meanwhile |
 | Adding a photo answers `this book already has a cover` | Someone else filled the gap seconds earlier, or the book got an Open Library cover (ADR 0015) | Nothing to do; reload to see it. The upload that lost was deleted from the store |
