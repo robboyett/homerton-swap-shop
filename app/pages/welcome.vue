@@ -15,7 +15,9 @@ const note = ref("");
  */
 function tidy(typed: string): string {
   const bare = typed.replace(/[\s\-()]/g, "");
+  if (bare.startsWith("+440")) return `+44${bare.slice(4)}`; // "+44 (0)7700 …"
   if (bare.startsWith("+")) return bare;
+  if (bare.startsWith("0044")) return `+44${bare.slice(4)}`;
   if (bare.startsWith("0")) return `+44${bare.slice(1)}`;
   if (bare.startsWith("44")) return `+${bare}`;
   return bare;

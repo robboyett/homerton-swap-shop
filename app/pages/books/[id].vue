@@ -49,9 +49,10 @@ async function move(which: Move) {
       data?: { message?: string; data?: { book?: BookPage } };
     };
     const current = err.data?.data?.book;
-    if (err.statusCode === 409 && current) {
+    if (err.statusCode === 409) {
       note.value = err.data?.message ?? "that has just changed";
-      if (data.value) data.value = { ...data.value, book: current };
+      if (current && data.value) data.value = { ...data.value, book: current };
+      else await refresh();
     } else {
       note.value = "something went wrong at our end. try again in a moment.";
       await refresh();
