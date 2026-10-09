@@ -16,9 +16,7 @@ if (!viewer.value?.is_admin) {
 
 const { data, refresh } = await useFetch("/api/members");
 const members = computed(() => data.value?.members ?? []);
-const { data: bookData, refresh: refreshBooks } = await useFetch<{ books: AdminBook[] }>(
-  "/api/admin/items",
-);
+const { data: bookData, refresh: refreshBooks } = await useFetch("/api/admin/items");
 const books = computed(() => bookData.value?.books ?? []);
 const onShelf = computed(() => books.value.filter((b) => b.status !== "removed"));
 const offShelf = computed(() => books.value.filter((b) => b.status === "removed"));
@@ -134,7 +132,10 @@ function saveEdit() {
   return act(async () => {
     await $fetch(`/api/members/${draft.id}`, {
       method: "PATCH",
-      body: { first_name: draft.first_name, whatsapp_number: draft.whatsapp_number },
+      body: {
+        first_name: draft.first_name,
+        ...(draft.whatsapp_number ? { whatsapp_number: draft.whatsapp_number } : {}),
+      },
     });
     editing.value = null;
     await refresh();
@@ -243,8 +244,8 @@ useHead({ title: "admin · homerton swap shop" });
                   <input v-model="editing.first_name" type="text" required >
                 </label>
                 <label class="field">
-                  <span>whatsapp number, +44 then ten digits</span>
-                  <input v-model="editing.whatsapp_number" type="tel" placeholder="+447…" required >
+                  <span>new whatsapp number, +44 then ten digits. leave blank to keep theirs</span>
+                  <input v-model="editing.whatsapp_number" type="tel" placeholder="+447…" >
                 </label>
                 <div class="choices">
                   <button type="submit" class="text-button" :disabled="busy">save</button>

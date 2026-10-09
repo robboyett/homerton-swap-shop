@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { items } from "../db/schema";
+import { items, profiles } from "../db/schema";
 import type { Db } from "../db/types";
 import { bookPage, createItems, listShelf, reserve } from "../items";
 import {
@@ -157,6 +157,13 @@ describe("moderation of people (ADR 0012)", () => {
     const [row] = await listMembers(db);
     expect(row?.first_name).toBe("robert");
     expect(row?.email).toBe("rob@example.com");
+    // A name alone leaves the number as it was.
+    expect(await updateMember(db, me?.id ?? "", { first_name: "rob" })).toBe(true);
+    const [kept] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.id, me?.id ?? ""));
+    expect(kept?.whatsappNumber).toBe("+447700900002");
     expect(
       await updateMember(db, "00000000-0000-4000-8000-000000000000", {
         first_name: "x",

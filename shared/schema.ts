@@ -227,8 +227,15 @@ export type Member = z.infer<typeof memberSchema>;
 /** Why a book came off the shelf. For Rob's own memory; shown to admins only. */
 export const removeSchema = z.object({ reason: z.string().trim().max(200).optional() });
 
-/** What an admin may correct about a person. The email is the username and is not editable. */
-export const memberEditSchema = newProfileSchema.pick({ first_name: true, whatsapp_number: true });
+/**
+ * What an admin may correct about a person: the name, the number, or both. Leaving the number
+ * out keeps the one on file, since the admin screen never sees it (rule 4). The email is the
+ * username and is not editable.
+ */
+export const memberEditSchema = z.object({
+  first_name: newProfileSchema.shape.first_name,
+  whatsapp_number: newProfileSchema.shape.whatsapp_number.optional(),
+});
 
 /** A book as the admin screen lists it: whose it is, and whether it is off the shelf. */
 export const adminBookSchema = shelfBookSchema.extend({

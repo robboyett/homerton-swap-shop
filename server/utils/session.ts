@@ -4,6 +4,7 @@
  * request because /api/me finds nobody.
  */
 import type { H3Event } from "h3";
+import type { Me } from "../../shared/schema";
 import { db } from "../services/db/client";
 import { meById } from "../services/profiles";
 
@@ -34,11 +35,21 @@ export async function viewerId(event: H3Event): Promise<string | null> {
   return session.data.id ?? null;
 }
 
-/** The signed-in profile id, or a 401. Every route that changes anything starts here. */
-export async function requireViewerId(event: H3Event): Promise<string> {
+/**
+ * The signed-in person, or a 401. Every route that needs someone starts here. The cookie is a
+ * claim; the database decides: a person removed by an admin (ADR 0012) is nobody from their
+ * very next request, open tab or not. One small query per request is the price.
+ */
+export async function requireViewer(event: H3Event): Promise<Me> {
   const id = await viewerId(event);
-  if (!id) throw createError({ statusCode: 401, statusMessage: "sign in first" });
-  return id;
+  const me = id ? await meById(db(), id) : null;
+  if (!me) throw createError({ statusCode: 401, statusMessage: "sign in first" });
+  return me;
+}
+
+/** The signed-in profile id, or a 401. */
+export async function requireViewerId(event: H3Event): Promise<string> {
+  return (await requireViewer(event)).id;
 }
 
 /**
@@ -46,8 +57,7 @@ export async function requireViewerId(event: H3Event): Promise<string> {
  * (ADR 0006); the flag is read from the database on each call, not trusted from the cookie.
  */
 export async function requireAdminId(event: H3Event): Promise<string> {
-  const id = await requireViewerId(event);
-  const me = await meById(db(), id);
-  if (!me?.is_admin) throw createError({ statusCode: 403, statusMessage: "admins only" });
-  return id;
+  const me = await requireViewer(event);
+  if (!me.is_admin) throw createError({ statusCode: 403, statusMessage: "admins only" });
+  return me.id;
 }

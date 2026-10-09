@@ -142,15 +142,18 @@ export async function setPassword(db: Db, id: string, password: string): Promise
 
 /* ---- moderation (ADR 0012): the caller has already checked the viewer is an admin ---- */
 
-/** A corrected first name or number. False if there is no such person. */
+/** A corrected first name, and a new number if one is given. False if there is no such person. */
 export async function updateMember(
   db: Db,
   id: string,
-  edit: { first_name: string; whatsapp_number: string },
+  edit: { first_name: string; whatsapp_number?: string },
 ): Promise<boolean> {
   const changed = await db
     .update(profiles)
-    .set({ firstName: edit.first_name.trim(), whatsappNumber: edit.whatsapp_number })
+    .set({
+      firstName: edit.first_name.trim(),
+      ...(edit.whatsapp_number ? { whatsappNumber: edit.whatsapp_number } : {}),
+    })
     .where(eq(profiles.id, id))
     .returning({ id: profiles.id });
   return changed.length === 1;
