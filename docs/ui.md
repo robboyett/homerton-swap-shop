@@ -28,7 +28,7 @@ Covers lead. Everything else is text.
 - Ratio 2:3, radius 2px
 - Shadow `0 1px 1px rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.10)`
 - A 5% dark spine strip down the left: `rgba(0,0,0,0.14)`
-- No text on covers in the grid. While a pointer is over one, a slim bar pinned to the foot of the viewport, full width, ink at 88% (`--ink-veil`) with ground text, names it: title, then author, one line. Moving to another cover replaces the text; leaving clears it. Hover only; touch screens never see it
+- No text on covers in the grid. While a pointer is over one, a slim bar drops in from the top of the viewport, full width, ink at 88% (`--ink-veil`) with ground text, names it: title, then author, one line. Moving to another cover replaces the text; leaving clears it. Hover only; touch screens never see it
 - Reserved covers drop to `opacity: 0.35`
 
 ## Grids
@@ -63,7 +63,7 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 
 | Page | Divergence | Why |
 |---|---|---|
-| Browse, book detail | A bar pinned to the foot of the viewport names the hovered cover | Rob found small or absent titles hard to read on the shelf and asked for it (9 Oct). It exists only while a pointer is over a cover, so the canvas's clean grid is what you see at rest |
+| Browse, book detail | A bar that drops in from the top of the viewport names the hovered cover | Rob found small or absent titles hard to read on the shelf and asked for it (9 Oct). It exists only while a pointer is over a cover, so the canvas's clean grid is what you see at rest. At the top, not the foot, because the browser shows the link's address at the foot |
 | Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id | Rob asked that blank covers stay colourful like the mocks (8 Oct). Real art replaces it as soon as a book has a `cover_url` or `photo_url` |
 | Add books | The corner marks sit at the frame's edges and the caption 16px up; the board draws an inner target box with the caption 24px up | The camera fills the frame, so there is no inner box to mark. Four corners at the edge say the same thing in less |
 | Book detail, add books | "add a photo of the cover" under a cover with no art; a photo replaces the coloured shapes | Rob asked that anyone could fill the gaps (9 Oct, ADR 0015). Not on the canvas |
