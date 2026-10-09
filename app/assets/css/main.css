@@ -273,19 +273,23 @@ button {
   background: var(--spine);
 }
 
-/* ---- the hovered-book bar: pinned to the foot of the viewport, full width (docs/ui.md) ---- */
+/* ---- the hovered-book bar: drops in from the top of the viewport, full width (docs/ui.md).
+   The top, not the foot: browsers draw a link's address along the bottom edge on hover. ---- */
 
 .hover-bar {
   position: fixed;
+  top: 0;
   right: 0;
-  bottom: 0;
   left: 0;
   z-index: 2;
-  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px;
   background: var(--ink-veil);
   color: var(--ground);
   opacity: 0;
-  transition: opacity 120ms;
+  transform: translateY(-100%);
+  transition:
+    opacity 120ms,
+    transform 160ms ease-out;
   pointer-events: none;
 }
 
@@ -300,6 +304,7 @@ button {
 @media (hover: hover) {
   .hover-bar--shown {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 

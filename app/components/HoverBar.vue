@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * A slim bar pinned to the foot of the viewport, full width, naming the cover the pointer is
- * over: title, then author (Rob, 9 Oct). Exists only while something is hovered, and only on
+ * A slim bar that drops in from the top of the viewport, full width, naming the cover the pointer
+ * is over: title, then author (Rob, 9 Oct). The top, because browsers draw a link's address along
+ * the bottom edge on hover and the two were fighting. Exists only while something is hovered, and only on
  * devices that hover; a phone never sees it, the tap goes to the book.
  */
 const hovered = useHovered();
