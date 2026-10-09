@@ -80,7 +80,6 @@ describe("accounts", () => {
         ...rob,
         email: "priya@example.com",
         first_name: " priya ",
-        whatsapp_number: "+447700900123",
       },
       { invitedBy: admin?.id ?? null },
     );
@@ -106,7 +105,7 @@ describe("the admin screen", () => {
     const admin = await createFirstAdmin(db, rob);
     await createProfile(
       db,
-      { ...rob, email: "priya@example.com", first_name: "priya", whatsapp_number: "+447700900123" },
+      { ...rob, email: "priya@example.com", first_name: "priya" },
       { invitedBy: admin?.id ?? null },
     );
     const members = await listMembers(db);
@@ -156,6 +155,8 @@ describe("moderation of people (ADR 0012)", () => {
 
   it("corrects a name or number, and nothing else", async () => {
     const me = await createFirstAdmin(db, rob);
+    // The first admin gives his number on the welcome page like everyone else.
+    expect(await setNumber(db, me?.id ?? "", "+447700900001")).toBe(true);
     expect(
       await updateMember(db, me?.id ?? "", {
         first_name: " robert ",
@@ -165,6 +166,16 @@ describe("moderation of people (ADR 0012)", () => {
     const [row] = await listMembers(db);
     expect(row?.first_name).toBe("robert");
     expect(row?.email).toBe("rob@example.com");
+    // A number can be corrected, never supplied for the first time: that is the welcome page's.
+    const newcomer = await createProfile(
+      db,
+      { ...rob, email: "new@example.com", first_name: "new" },
+      { invitedBy: me?.id ?? null },
+    );
+    expect(
+      await updateMember(db, newcomer.id, { first_name: "new", whatsapp_number: "+447700900003" }),
+    ).toBe(false);
+    expect(await updateMember(db, newcomer.id, { first_name: "newer" })).toBe(true);
     // A name alone leaves the number as it was.
     expect(await updateMember(db, me?.id ?? "", { first_name: "rob" })).toBe(true);
     const [kept] = await db
@@ -184,9 +195,11 @@ describe("moderation of people (ADR 0012)", () => {
     const admin = await createFirstAdmin(db, rob);
     const priya = await createProfile(
       db,
-      { ...rob, email: "priya@example.com", first_name: "priya", whatsapp_number: "+447700900123" },
+      { ...rob, email: "priya@example.com", first_name: "priya" },
       { invitedBy: admin?.id ?? null },
     );
+    // She gives her number at first sign-in; without it she could not reserve Rob's book below.
+    expect(await setNumber(db, priya.id, "+447700900123")).toBe(true);
     const [priyas] = await createItems(db, priya.id, [book("Priya's book")]);
     const [robs] = await createItems(db, admin?.id ?? "", [book("Rob's book")]);
     await reserve(db, robs ?? "", priya.id);
@@ -218,12 +231,11 @@ describe("moderation of people (ADR 0012)", () => {
 describe("the first sign-in (ADR 0014)", () => {
   it("makes an account with no number, which the person gives once", async () => {
     const admin = await createFirstAdmin(db, rob);
-    const { whatsapp_number: _dropped, ...noNumber } = {
-      ...rob,
-      email: "priya@example.com",
-      first_name: "priya",
-    };
-    const priya = await createProfile(db, noNumber, { invitedBy: admin?.id ?? null });
+    const priya = await createProfile(
+      db,
+      { ...rob, email: "priya@example.com", first_name: "priya" },
+      { invitedBy: admin?.id ?? null },
+    );
     expect(priya.has_number).toBe(false);
     expect((await listMembers(db)).find((m) => m.first_name === "priya")?.has_number).toBe(false);
     expect(await setNumber(db, priya.id, "+447700900123")).toBe(true);

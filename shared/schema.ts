@@ -129,12 +129,11 @@ export const meSchema = viewerSchema.extend({
 
 export const signInSchema = z.object({ email: emailSchema, password: z.string().min(1) });
 
-/** A new account, as Rob fills it in. The number is optional: the person gives it at their first sign-in (ADR 0014). */
+/** A new account, as Rob fills it in. No number: the person gives their own at their first sign-in (ADR 0014). */
 export const newProfileSchema = z.object({
   email: emailSchema,
   password: z.string().min(12, "at least 12 characters"),
   first_name: z.string().trim().min(1).max(40),
-  whatsapp_number: profileSchema.shape.whatsapp_number.optional(),
 });
 
 /** The welcome page's one box (ADR 0014). */
