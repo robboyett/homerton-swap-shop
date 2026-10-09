@@ -4,6 +4,7 @@
  * guessed, and `BLOB_READ_WRITE_TOKEN` is read by the SDK from the environment.
  */
 import { del, put } from "@vercel/blob";
+import { log } from "../utils/logger";
 
 /** Keep uploads small: the phone shrinks first, and this is the ceiling behind it. */
 export const MAX_PHOTO_BYTES = 3 * 1024 * 1024;
@@ -27,7 +28,9 @@ export async function storeCoverPhoto(
 export async function deleteCoverPhoto(url: string): Promise<void> {
   try {
     await del(url);
-  } catch {
+  } catch (e) {
     // Nothing references it any more; a leftover object is a cost, not a correctness problem.
+    // Said out loud, so a store that quietly fills up has a trail.
+    log.warn("cover photo not deleted from the store", { message: (e as Error).message });
   }
 }

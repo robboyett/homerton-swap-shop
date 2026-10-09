@@ -67,9 +67,17 @@ async function move(which: Move) {
 async function addPhoto(file: File) {
   busy.value = true;
   note.value = "";
+  let small: Blob;
+  try {
+    small = await shrinkPhoto(file);
+  } catch {
+    note.value = "that photo can't be read on this phone. try another.";
+    busy.value = false;
+    return;
+  }
   try {
     const body = new FormData();
-    body.append("photo", await shrinkPhoto(file), "cover.jpg");
+    body.append("photo", small, "cover.jpg");
     const result = await $fetch(`/api/items/${id}/photo`, { method: "POST", body });
     if (data.value) data.value = { ...data.value, book: result.book };
   } catch (e) {

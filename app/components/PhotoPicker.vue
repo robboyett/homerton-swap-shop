@@ -1,9 +1,10 @@
 <script setup lang="ts">
 /**
- * A text button that opens the phone's camera or photo roll. The file input is the real control
+ * A text button that opens the phone's photo roll, or with `camera` the camera straight away
+ * (right in the pile, book in hand; on a book page someone may already have the picture). The file input is the real control
  * and sits off-screen; the visible button is the label, drawn like every other text action.
  */
-defineProps<{ disabled?: boolean }>();
+defineProps<{ disabled?: boolean; camera?: boolean }>();
 const emit = defineEmits<{ picked: [file: File] }>();
 const input = ref<HTMLInputElement | null>(null);
 
@@ -21,7 +22,7 @@ function onChange(event: Event) {
       class="picker__input"
       type="file"
       accept="image/*"
-      capture="environment"
+      :capture="camera ? 'environment' : undefined"
       :disabled="disabled"
       @change="onChange"
     >
