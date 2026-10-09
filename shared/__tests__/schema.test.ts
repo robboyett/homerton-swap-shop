@@ -25,6 +25,8 @@ const base: Item = {
   reserved_by: null,
   reserved_at: null,
   collected_at: null,
+  removed_at: null,
+  removed_reason: null,
   created_at: "2026-10-06T09:00:00Z",
 };
 
@@ -47,6 +49,13 @@ describe("bookState", () => {
   it("tells a bystander only that it is reserved", () => {
     const reserved = { ...base, status: "reserved", reserved_by: "me" } as Item;
     expect(bookState(reserved, "nosy")).toBe("other");
+  });
+
+  it("is collected, which shows nothing, if a removed book ever reached a page", () => {
+    const removed = { ...base, status: "removed", reserved_by: "me" } as Item;
+    for (const viewer of ["me", "owner", "nosy"]) {
+      expect(bookState(removed, viewer)).toBe("collected");
+    }
   });
 
   it("is collected for everyone once it has gone", () => {

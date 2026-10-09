@@ -23,6 +23,7 @@ The people. Rows are made by Rob on the admin screen, never by sign-up.
 | `password_hash` | text | scrypt. Set from a one-time password Rob hands over |
 | `is_admin` | boolean | Rob, and nobody else at first |
 | `invited_by` | uuid → profiles.id | Who vouched for them |
+| `removed_at` | timestamptz, null | Out of the shop ([ADR 0012](adr/0012-removing-keeps-the-record.md)): cannot sign in, books removed, reservations released. An admin can let them back in |
 | `created_at` | timestamptz | |
 
 No address, no surname, no postcode, no last-seen. The email is the username and is used for nothing else. If a field isn't here, we aren't holding it.
@@ -45,10 +46,12 @@ A book, or a collection posted as one.
 | `cover_url` | text, null | Open Library's cover service |
 | `photo_url` | text, null | Vercel Blob, for a collection or a book with no cover |
 | `approx_count` | integer, null | Collections only. "about 12" |
-| `status` | `available` \| `reserved` \| `collected` | |
+| `status` | `available` \| `reserved` \| `collected` \| `removed` | `removed` is an admin's doing, never a member's |
 | `reserved_by` | uuid → profiles.id, null | |
 | `reserved_at` | timestamptz, null | |
 | `collected_at` | timestamptz, null | |
+| `removed_at` | timestamptz, null | Set by an admin; the book is off the shelf for everyone and the record stays ([ADR 0012](adr/0012-removing-keeps-the-record.md)) |
+| `removed_reason` | text, null | Optional note for the admin's own memory. Shown to admins only |
 | `created_at` | timestamptz | |
 
 No condition, no quality, no price, no location, no view count.
@@ -62,6 +65,7 @@ No condition, no quality, no price, no location, no view count.
 3. **Collecting** is allowed to `reserved_by` alone, and only from `reserved`: the person who turned up is the one who knows. **Undoing it is open to the owner as well** (ADR 0008), so a mistaken tick is not a dead end, and returns to `reserved` with `reserved_by` intact.
 4. **Numbers are never shown to the wrong person.** While reserved, the requester sees the owner's number and the owner sees the requester's first name and number. Everyone else sees that it is reserved, not by whom. An available or collected item shows nobody's number.
 5. **Never store or display an address.** There is no field for one, and that is the point.
+6. **Removing keeps the record** ([ADR 0012](adr/0012-removing-keeps-the-record.md)). A removed book is `status = 'removed'` with `reserved_by` cleared; it is on no shelf, no page and in no "more like this", and only an admin's list shows it. A removed person has `removed_at` set; sign-in and every signed-in request treat them as nobody from that moment, their books are removed and what they held is released. Both are reversible by an admin. Nothing is deleted.
 
 Authorisation is in `server/services/`, not in the pages, and not in the database: Neon has no row-level security in this design, so the service layer is the only gate. That is the cost of [ADR 0002](adr/0002-neon-not-supabase.md), and it is why rule 4 gets tests.
 

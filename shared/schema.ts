@@ -20,8 +20,11 @@ export const GENRES = [
   "young adult",
 ] as const;
 
-/** A book is on the shelf, promised to someone, or gone. Nothing else. */
-export const STATUSES = ["available", "reserved", "collected"] as const;
+/**
+ * A book is on the shelf, promised to someone, gone, or taken off the shelf by Rob (ADR 0012).
+ * Nothing else. Removed books keep their record and are shown to nobody but an admin.
+ */
+export const STATUSES = ["available", "reserved", "collected", "removed"] as const;
 
 export const ageBandSchema = z.enum(AGE_BANDS);
 export const genreSchema = z.enum(GENRES);
@@ -73,6 +76,9 @@ export const itemSchema = z.object({
   reserved_by: z.string().nullable(),
   reserved_at: z.string().nullable(),
   collected_at: z.string().nullable(),
+  /** Set by an admin, with an optional note for their own memory (ADR 0012). */
+  removed_at: z.string().nullable(),
+  removed_reason: z.string().nullable(),
   created_at: z.string(),
 });
 
@@ -94,7 +100,9 @@ export function bookState(
   item: Pick<Item, "status" | "reserved_by" | "owner_id">,
   viewerId: string,
 ): BookState {
-  if (item.status === "collected") return "collected";
+  // A removed book never reaches a page (server/services/items.ts answers null); if one did,
+  // collected is the state that shows nobody a number and nobody a button.
+  if (item.status === "collected" || item.status === "removed") return "collected";
   if (item.status === "available") return "available";
   if (item.reserved_by === viewerId) return "mine";
   if (item.owner_id === viewerId) return "owner";
@@ -206,8 +214,34 @@ export function bookIsbnFromBarcode(text: string): string | null {
  */
 export const memberSchema = meSchema.extend({
   invited_by_first_name: z.string().nullable(),
+  /** Out of the shop (ADR 0012), until an admin lets them back in. */
+  removed_at: z.string().nullable(),
 });
 
 export const newPasswordSchema = z.object({ password: newProfileSchema.shape.password });
 
 export type Member = z.infer<typeof memberSchema>;
+
+/* ---- moderation (ADR 0012): admin only ---- */
+
+/** Why a book came off the shelf. For Rob's own memory; shown to admins only. */
+export const removeSchema = z.object({ reason: z.string().trim().max(200).optional() });
+
+/**
+ * What an admin may correct about a person: the name, the number, or both. Leaving the number
+ * out keeps the one on file, since the admin screen never sees it (rule 4). The email is the
+ * username and is not editable.
+ */
+export const memberEditSchema = z.object({
+  first_name: newProfileSchema.shape.first_name,
+  whatsapp_number: newProfileSchema.shape.whatsapp_number.optional(),
+});
+
+/** A book as the admin screen lists it: whose it is, and whether it is off the shelf. */
+export const adminBookSchema = shelfBookSchema.extend({
+  owner_first_name: z.string(),
+  removed_at: z.string().nullable(),
+  removed_reason: z.string().nullable(),
+});
+
+export type AdminBook = z.infer<typeof adminBookSchema>;
