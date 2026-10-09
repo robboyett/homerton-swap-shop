@@ -8,7 +8,7 @@
  * Authorisation is here and only here. Neon has no row-level security in this design (ADR 0002),
  * so there is nothing behind these checks. docs/data.md holds the rules they implement.
  */
-import { and, asc, desc, eq, inArray, ne, notInArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, ne, notInArray, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import {
   type AdminBook,
@@ -187,6 +187,64 @@ export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
     }
   }
   return { asked_for: [...askedFor.values()], asked_of_you: [...askedOfYou.values()] };
+}
+
+/* ---- cover photos (ADR 0015) ---- */
+
+/** Whether a book already has art, and its current photo if any. Null if there is no such book. */
+export async function artOf(
+  db: Db,
+  itemId: string,
+): Promise<{ has_art: boolean; photo_url: string | null; removed: boolean } | null> {
+  const [row] = await db
+    .select({ cover_url: items.coverUrl, photo_url: items.photoUrl, status: items.status })
+    .from(items)
+    .where(eq(items.id, itemId));
+  if (!row) return null;
+  return {
+    has_art: row.cover_url !== null || row.photo_url !== null,
+    photo_url: row.photo_url,
+    removed: row.status === "removed",
+  };
+}
+
+/**
+ * Give a book a photo, only where it has no art at all and is not removed. Anyone signed in may
+ * (ADR 0015). In the WHERE clause, so two people filling the same gap at once produce one winner.
+ */
+export async function setPhoto(db: Db, itemId: string, url: string): Promise<boolean> {
+  const changed = await db
+    .update(items)
+    .set({ photoUrl: url })
+    .where(
+      and(
+        eq(items.id, itemId),
+        isNull(items.coverUrl),
+        isNull(items.photoUrl),
+        ne(items.status, "removed"),
+      ),
+    )
+    .returning({ id: items.id });
+  return changed.length === 1;
+}
+
+/**
+ * An admin takes a photo down. Returns the URL that was there, so the store can be tidied.
+ * Read, then clear only if it is still that URL: RETURNING would hand back the value after the
+ * update, which is null.
+ */
+export async function clearPhoto(db: Db, itemId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ photo_url: items.photoUrl })
+    .from(items)
+    .where(eq(items.id, itemId));
+  if (!row?.photo_url) return null;
+  const changed = await db
+    .update(items)
+    .set({ photoUrl: null })
+    .where(and(eq(items.id, itemId), eq(items.photoUrl, row.photo_url)))
+    .returning({ id: items.id });
+  return changed.length === 1 ? row.photo_url : null;
 }
 
 /* ---- adding ---- */

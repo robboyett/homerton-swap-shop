@@ -20,6 +20,12 @@ const typedTitle = ref("");
 const typedAuthor = ref("");
 
 const current = computed(() => pile.value[selected.value]);
+/** Photos picked for books in the pile, by pile index, already shrunk. Sent after publish. */
+const photos = ref(new Map<number, Blob>());
+
+async function pickPhoto(file: File) {
+  photos.value.set(selected.value, await shrinkPhoto(file));
+}
 
 function add(book: NewBook) {
   if (book.isbn && pile.value.some((b) => b.isbn === book.isbn)) {
@@ -85,6 +91,12 @@ function addTyped() {
 
 function remove(index: number) {
   pile.value.splice(index, 1);
+  const kept = new Map<number, Blob>();
+  for (const [i, blob] of photos.value) {
+    if (i < index) kept.set(i, blob);
+    else if (i > index) kept.set(i - 1, blob);
+  }
+  photos.value = kept;
   selected.value = Math.max(0, Math.min(selected.value, pile.value.length - 1));
 }
 
@@ -93,8 +105,27 @@ async function publish() {
   busy.value = true;
   note.value = "";
   try {
-    await $fetch("/api/items", { method: "POST", body: { books: pile.value } });
+    const { ids } = await $fetch("/api/items", { method: "POST", body: { books: pile.value } });
+    // Photos ride after the books, one request each; a photo that fails leaves a plain cover.
+    const failed: string[] = [];
+    for (const [i, blob] of photos.value) {
+      const id = ids[i];
+      if (!id) continue;
+      const body = new FormData();
+      body.append("photo", blob, "cover.jpg");
+      try {
+        await $fetch(`/api/items/${id}/photo`, { method: "POST", body });
+      } catch {
+        failed.push(pile.value[i]?.title ?? "a book");
+      }
+    }
     pile.value = [];
+    photos.value = new Map();
+    if (failed.length > 0) {
+      note.value = `published, but the photo for ${failed.join(", ")} didn't save. you can add it from the book's page.`;
+      busy.value = false;
+      return;
+    }
     await navigateTo("/");
   } catch {
     note.value = "that didn't save. nothing was published; try again in a moment.";
@@ -211,6 +242,13 @@ useHead({ title: "add books · homerton swap shop" });
             >
               {{ band }}
             </button>
+          </div>
+
+          <div v-if="!current.cover_url" class="stack">
+            <span v-if="photos.has(selected)">photo ready. it goes up with the book.</span>
+            <PhotoPicker :disabled="busy" @picked="pickPhoto">
+              {{ photos.has(selected) ? "use a different photo" : "add a photo of the cover" }}
+            </PhotoPicker>
           </div>
 
           <div>

@@ -65,6 +65,7 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 |---|---|---|
 | Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id | Rob asked that blank covers stay colourful like the mocks (8 Oct). Real art replaces it as soon as a book has a `cover_url` or `photo_url` |
 | Add books | The corner marks sit at the frame's edges and the caption 16px up; the board draws an inner target box with the caption 24px up | The camera fills the frame, so there is no inner box to mark. Four corners at the edge say the same thing in less |
+| Book detail, add books | "add a photo of the cover" under a cover with no art; a photo replaces the coloured shapes | Rob asked that anyone could fill the gaps (9 Oct, ADR 0015). Not on the canvas |
 | Welcome | No board exists. The first sign-in: what this is, how it works, and the one box for the mobile number, drawn from the rules alone | Rob asked for something short on first sign-in (9 Oct, ADR 0014). A page shown once, not a pop-up |
 | Requests | No board exists. Two lists grouped by person, each group a name, one WhatsApp button and its books with "asked for … ago"; drawn from the rules alone | Rob described the screen and asked for it plain (9 Oct, ADR 0013) |
 | Add books | The typed number box stays underneath the camera frame, labelled "or type the number under the barcode" | A bent paperback in a dim hallway (docs/plan.md). When there is no camera or no permission the frame disappears and the box is the only way in |

@@ -44,7 +44,7 @@ A book, or a collection posted as one.
 | `genre` | text | One of the sections in the grid |
 | `age_band` | `0-3` \| `4-6` \| `7-9` \| `10+` | The only filter |
 | `cover_url` | text, null | Open Library's cover service |
-| `photo_url` | text, null | Vercel Blob, for a collection or a book with no cover |
+| `photo_url` | text, null | Vercel Blob. Set once, by any member, on a book that has no `cover_url` and no photo yet ([ADR 0015](adr/0015-anyone-can-fill-a-missing-cover.md)); cleared only by an admin. Collections with a photo are Phase 4 |
 | `approx_count` | integer, null | Collections only. "about 12" |
 | `status` | `available` \| `reserved` \| `collected` \| `removed` | `removed` is an admin's doing, never a member's |
 | `reserved_by` | uuid → profiles.id, null | |

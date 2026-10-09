@@ -9,7 +9,9 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { items, profiles } from "../db/schema";
 import {
+  artOf,
   bookPage,
+  clearPhoto,
   collect,
   createItems,
   type Db,
@@ -21,6 +23,7 @@ import {
   requestsFor,
   reserve,
   restoreItem,
+  setPhoto,
   uncollect,
 } from "../items";
 import { freshDb } from "./pglite";
@@ -462,5 +465,46 @@ describe("a person with no number yet (ADR 0014)", () => {
       .set({ whatsappNumber: "+447700900321" })
       .where(eq(profiles.id, newcomer));
     expect(await reserve(db, itemId, newcomer)).toBe(true);
+  });
+});
+
+describe("cover photos (ADR 0015)", () => {
+  const url = "https://example.public.blob.vercel-storage.com/covers/x-abc123.jpg";
+
+  it("fills a gap once, for anyone, and never over existing art", async () => {
+    expect(await artOf(db, itemId)).toEqual({ has_art: false, photo_url: null, removed: false });
+    expect(await setPhoto(db, itemId, url)).toBe(true);
+    expect(
+      await setPhoto(db, itemId, "https://example.public.blob.vercel-storage.com/second.jpg"),
+    ).toBe(false);
+    expect((await bookPage(db, itemId, bystander))?.photo_url).toBe(url);
+    expect(await artOf(db, itemId)).toEqual({ has_art: true, photo_url: url, removed: false });
+
+    const [withCover] = await createItems(db, owner, [
+      {
+        isbn: null,
+        title: "Has a cover",
+        author: null,
+        blurb: null,
+        cover_url: "https://covers.openlibrary.org/b/id/1-L.jpg",
+        genre: "picture books",
+        age_band: "0-3",
+      },
+    ]);
+    expect(await setPhoto(db, withCover ?? "", url)).toBe(false);
+  });
+
+  it("is refused on a removed book, and an admin can take a photo down", async () => {
+    await removeItem(db, itemId, null);
+    expect(await setPhoto(db, itemId, url)).toBe(false);
+    await restoreItem(db, itemId);
+    await setPhoto(db, itemId, url);
+    expect(await clearPhoto(db, itemId)).toBe(url);
+    expect(await clearPhoto(db, itemId)).toBeNull();
+    expect((await bookPage(db, itemId, bystander))?.photo_url).toBeNull();
+  });
+
+  it("is null for a book that does not exist", async () => {
+    expect(await artOf(db, "00000000-0000-4000-8000-000000000000")).toBeNull();
   });
 });
