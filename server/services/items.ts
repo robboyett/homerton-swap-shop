@@ -189,6 +189,14 @@ export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
   return { asked_for: [...askedFor.values()], asked_of_you: [...askedOfYou.values()] };
 }
 
+/** How many of this person's books other people hold right now (ADR 0016). Their own asks are not counted. */
+export async function countAskedOfYou(db: Db, viewerId: string): Promise<number> {
+  return db.$count(
+    items,
+    and(eq(items.ownerId, viewerId), eq(items.status, "reserved"), ne(items.reservedBy, viewerId)),
+  );
+}
+
 /* ---- cover photos (ADR 0015) ---- */
 
 /** Whether a book already has art, and its current photo if any. Null if there is no such book. */

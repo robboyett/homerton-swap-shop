@@ -2,8 +2,10 @@
 /** Browse: every cover at once, sectioned by genre, filtered by age band (docs/ui.md). */
 import { AGE_BANDS, GENRES } from "~~/shared/schema";
 
-const { data } = await useFetch("/api/items");
+const { data, refresh } = await useFetch("/api/items");
 const books = computed(() => data.value?.books ?? []);
+// Other people's moves show here within half a minute, with the filter left alone (ADR 0016).
+useLive(refresh);
 
 const FILTERS = ["all", ...AGE_BANDS] as const;
 type Filter = (typeof FILTERS)[number];

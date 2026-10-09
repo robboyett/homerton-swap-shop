@@ -13,6 +13,7 @@ import {
   bookPage,
   clearPhoto,
   collect,
+  countAskedOfYou,
   createItems,
   type Db,
   listForAdmin,
@@ -506,5 +507,18 @@ describe("cover photos (ADR 0015)", () => {
 
   it("is null for a book that does not exist", async () => {
     expect(await artOf(db, "00000000-0000-4000-8000-000000000000")).toBeNull();
+  });
+});
+
+describe("the nav count (ADR 0016)", () => {
+  it("counts your books others hold, not your own asks or anything collected", async () => {
+    const second = await freshItem();
+    expect(await countAskedOfYou(db, owner)).toBe(0);
+    await reserve(db, itemId, asker);
+    await reserve(db, second, owner); // your own book, held by you: not waiting on anyone
+    expect(await countAskedOfYou(db, owner)).toBe(1);
+    expect(await countAskedOfYou(db, asker)).toBe(0);
+    await collect(db, itemId, asker);
+    expect(await countAskedOfYou(db, owner)).toBe(0);
   });
 });
