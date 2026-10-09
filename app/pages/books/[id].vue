@@ -29,7 +29,7 @@ const note = ref("");
 /** Bumped after every attempt, so the collect tick is remounted unticked if the move failed. */
 const attempts = ref(0);
 // Someone else reserving or an admin removing this book shows within half a minute (ADR 0016).
-useLive(refresh, () => busy.value);
+useLive({ data, error, refresh, paused: () => busy.value });
 
 type Move = "reserve" | "release" | "collect" | "uncollect";
 

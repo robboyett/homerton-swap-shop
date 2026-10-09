@@ -4,13 +4,15 @@ const viewer = useViewer();
 
 // How many of your books other people hold, on every page, refreshed on the same rhythm as the
 // pages themselves (ADR 0016). Nothing is fetched when signed out.
-const { data: live, refresh } = await useFetch("/api/requests/count", {
+const {
+  data: live,
+  error,
+  refresh,
+} = await useFetch("/api/requests/count", {
   immediate: !!viewer.value,
   default: () => ({ waiting: 0 }),
 });
-useLive(async () => {
-  if (viewer.value) await refresh();
-});
+useLive({ data: live, error, refresh, paused: () => !viewer.value });
 const waiting = computed(() => (viewer.value ? (live.value?.waiting ?? 0) : 0));
 </script>
 

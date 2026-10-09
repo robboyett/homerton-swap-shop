@@ -57,7 +57,7 @@ The dependency side is enforced by `pnpm check` against `docs/allowed-deps.txt`.
 - **Never push straight to `main`.** Branch, PR, preview, merge.
 - **Base every PR on `main`, never on another PR's branch.** If one depends on another, wait for the first to merge, then branch from `main`.
 - **Fresh-session [REVIEW.md](REVIEW.md) before merge,** in a new session, not the one that wrote the code.
-- **Claude merges.** When `pnpm check` is green, the preview looks right, and REVIEW.md comes back clean, merge it. Say in the PR what you checked. Rob reads the merged history, not every diff.
+- **Claude merges, with `scripts/merge.sh <pr>`.** When `pnpm check` is green, the preview looks right, and REVIEW.md comes back clean, run the script; it is the only way a PR gets merged. It refuses a dirty tree, a head that is not the PR head, a Vercel check that is not SUCCESS, and a red gate. Never chain `gh pr merge` after anything else. Say in the PR what you checked. Rob reads the merged history, not every diff.
 - **But stop and ask Rob** before: answering anything in the "Open questions" table; changing anything in the "Decided" table; adding a dependency; bumping `docs/phase.md`; touching how phone numbers are stored or shown; deleting or migrating live data; making the repo public; anything you can't undo.
 - **Don't "fix" a failing test by changing the test.** Fix the code. If the only way to make it pass is to edit the test, say so and stop.
 - **Explain twice, write it down.** The second time Rob explains something, it goes in this file or the relevant `docs/` file before work continues.
