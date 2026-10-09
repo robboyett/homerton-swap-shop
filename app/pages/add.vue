@@ -24,7 +24,15 @@ const current = computed(() => pile.value[selected.value]);
 const photos = ref(new Map<number, Blob>());
 
 async function pickPhoto(file: File) {
-  photos.value.set(selected.value, await shrinkPhoto(file));
+  const index = selected.value;
+  try {
+    const small = await shrinkPhoto(file);
+    photos.value.set(index, small);
+    note.value = "";
+  } catch {
+    note.value =
+      "that photo can't be read on this phone. try another, or add one from the book's page later.";
+  }
 }
 
 function add(book: NewBook) {
@@ -246,7 +254,7 @@ useHead({ title: "add books · homerton swap shop" });
 
           <div v-if="!current.cover_url" class="stack">
             <span v-if="photos.has(selected)">photo ready. it goes up with the book.</span>
-            <PhotoPicker :disabled="busy" @picked="pickPhoto">
+            <PhotoPicker camera :disabled="busy" @picked="pickPhoto">
               {{ photos.has(selected) ? "use a different photo" : "add a photo of the cover" }}
             </PhotoPicker>
           </div>

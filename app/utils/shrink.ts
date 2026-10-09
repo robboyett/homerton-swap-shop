@@ -3,6 +3,8 @@
  * 0.85. A six-megabyte snap becomes a couple of hundred kilobytes. Browser only.
  */
 export async function shrinkPhoto(file: File, longest = 1200): Promise<Blob> {
+  // Modern browsers honour EXIF orientation here, so a portrait snap comes out upright. A format
+  // the browser cannot decode rejects, and the caller says so; the original is never sent blind.
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, longest / Math.max(bitmap.width, bitmap.height));
   const width = Math.round(bitmap.width * scale);

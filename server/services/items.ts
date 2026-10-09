@@ -235,14 +235,16 @@ export async function setPhoto(db: Db, itemId: string, url: string): Promise<boo
  */
 export async function clearPhoto(db: Db, itemId: string): Promise<string | null> {
   const [row] = await db
-    .select({ photo_url: items.photoUrl })
+    .select({ photo_url: items.photoUrl, status: items.status })
     .from(items)
     .where(eq(items.id, itemId));
-  if (!row?.photo_url) return null;
+  if (!row?.photo_url || row.status === "removed") return null;
   const changed = await db
     .update(items)
     .set({ photoUrl: null })
-    .where(and(eq(items.id, itemId), eq(items.photoUrl, row.photo_url)))
+    .where(
+      and(eq(items.id, itemId), eq(items.photoUrl, row.photo_url), ne(items.status, "removed")),
+    )
     .returning({ id: items.id });
   return changed.length === 1 ? row.photo_url : null;
 }
