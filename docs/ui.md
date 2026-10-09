@@ -63,6 +63,7 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 
 | Page | Divergence | Why |
 |---|---|---|
+| How it works | The copy is about books only: the intro no longer says toys and clothes, the giving steps say how adding works today, and collections are not mentioned | Rob asked for it (9 Oct). Toys, clothes and collections are Phase 4 and the page describes what exists |
 | Browse, book detail | A bar that drops in from the top of the viewport names the hovered cover | Rob found small or absent titles hard to read on the shelf and asked for it (9 Oct). It exists only while a pointer is over a cover, so the canvas's clean grid is what you see at rest. At the top, not the foot, because the browser shows the link's address at the foot |
 | Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id | Rob asked that blank covers stay colourful like the mocks (8 Oct). Real art replaces it as soon as a book has a `cover_url` or `photo_url` |
 | Add books | The corner marks sit at the frame's edges and the caption 16px up; the board draws an inner target box with the caption 24px up | The camera fills the frame, so there is no inner box to mark. Four corners at the edge say the same thing in less |
