@@ -467,14 +467,19 @@ button {
 
 /* ---- buttons ---- */
 
+/*
+ * A primary button: the same one-pixel box as a field, but centred text and a small radius, so a
+ * thing you press reads differently from a thing you type into (Rob, 9 Oct). Fields stay square.
+ */
 .button {
   display: block;
   width: 100%;
   min-height: 44px;
   padding: 12px 14px;
   border: 1px solid var(--ink);
+  border-radius: 6px;
   background: var(--ground);
-  text-align: left;
+  text-align: center;
 }
 
 .button:hover {
@@ -521,7 +526,7 @@ button {
   gap: 6px;
 }
 
-/* The same box as a primary button: one border, 44px, square corners. */
+/* The same one-pixel box as a primary button, but square: a field is a thing you type into. */
 .field input {
   width: 100%;
   min-height: 44px;
