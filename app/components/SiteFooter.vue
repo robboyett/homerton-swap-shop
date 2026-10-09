@@ -6,6 +6,7 @@ const viewer = useViewer();
 <template>
   <footer class="site-footer">
     <NuxtLink class="site-nav__narrow" to="/how-it-works">how it works</NuxtLink>
+    <NuxtLink v-if="viewer" class="site-nav__narrow" to="/requests">requests</NuxtLink>
     <NuxtLink v-if="viewer" class="site-nav__narrow" to="/account">{{ viewer.first_name }}</NuxtLink>
     <span>invite only</span>
     <span>homerton</span>

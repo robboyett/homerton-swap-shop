@@ -6,6 +6,7 @@ When something looks broken, read this first. When you add a way something can f
 
 | Symptom | Cause | What to do |
 |---------|-------|------------|
+| A book is gone from "requests" between one look and the next | Only reserved books are listed (ADR 0013). It was collected, put back on the shelf by the other side, or taken off by an admin | Nothing to do. The shelf shows whether it is back; the book page shows its state |
 | A book someone reserved has vanished from their page and the shelf, with no message | An admin took it off the shelf (ADR 0012); removal ends any reservation and the page is a 404 for everyone | Nothing is wrong. The book is on `/admin` under "off the shelf" with "put it back", and the reason if one was given |
 | Someone says their password stopped working, and sign-in says the usual "don't match" | They may have been removed (ADR 0012): a removed account is treated as nobody by sign-in, on purpose, with no different message | Look for them on `/admin`; "let them back in" restores sign-in. Their books stay removed until restored one by one |
 | Removing an account seemed to half work: they are out, but a book of theirs is still on the shelf | Removal is three statements, not a transaction (ADR 0012, point 5); a request died between them | Press "remove" again. Every step is safe to repeat |

@@ -8,13 +8,15 @@
  * Authorisation is here and only here. Neon has no row-level security in this design (ADR 0002),
  * so there is nothing behind these checks. docs/data.md holds the rules they implement.
  */
-import { and, desc, eq, inArray, ne, notInArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, notInArray, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import {
   type AdminBook,
   type BookPage,
   bookState,
   type NewBook,
+  type RequestGroup,
+  type Requests,
   type ShelfBook,
 } from "../../shared/schema";
 import { items, profiles } from "./db/schema";
@@ -120,6 +122,70 @@ export async function bookPage(db: Db, itemId: string, viewerId: string): Promis
     contact,
     can_undo: state === "collected" && (owner_id === viewerId || reserved_by === viewerId),
   };
+}
+
+/**
+ * Everything live between this viewer and each other person (ADR 0013). Reserved books only,
+ * grouped by the other side, oldest ask first. The number in each group is the other person's,
+ * and the viewer is one side of every book here, so rule 4 holds as it does on a book page.
+ */
+export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
+  const owner = alias(profiles, "owner");
+  const requester = alias(profiles, "requester");
+  const rows = await db
+    .select({
+      id: items.id,
+      title: items.title,
+      cover_url: items.coverUrl,
+      photo_url: items.photoUrl,
+      reserved_at: items.reservedAt,
+      owner_id: items.ownerId,
+      reserved_by: items.reservedBy,
+      owner_first_name: owner.firstName,
+      owner_number: owner.whatsappNumber,
+      requester_first_name: requester.firstName,
+      requester_number: requester.whatsappNumber,
+    })
+    .from(items)
+    .innerJoin(owner, eq(items.ownerId, owner.id))
+    .innerJoin(requester, eq(items.reservedBy, requester.id))
+    .where(
+      and(
+        eq(items.status, "reserved"),
+        or(eq(items.reservedBy, viewerId), eq(items.ownerId, viewerId)),
+      ),
+    )
+    .orderBy(asc(items.reservedAt), items.title);
+
+  const askedFor = new Map<string, RequestGroup>();
+  const askedOfYou = new Map<string, RequestGroup>();
+  for (const r of rows) {
+    const book = {
+      id: r.id,
+      title: r.title,
+      cover_url: r.cover_url,
+      photo_url: r.photo_url,
+      reserved_at: (r.reserved_at ?? new Date(0)).toISOString(),
+    };
+    // Your own book, reserved by you (ADR 0008): one line, under "you've asked for".
+    if (r.reserved_by === viewerId) {
+      const group = askedFor.get(r.owner_id) ?? {
+        person: { first_name: r.owner_first_name, whatsapp_number: r.owner_number },
+        books: [],
+      };
+      group.books.push(book);
+      askedFor.set(r.owner_id, group);
+    } else {
+      const key = r.reserved_by ?? "";
+      const group = askedOfYou.get(key) ?? {
+        person: { first_name: r.requester_first_name, whatsapp_number: r.requester_number },
+        books: [],
+      };
+      group.books.push(book);
+      askedOfYou.set(key, group);
+    }
+  }
+  return { asked_for: [...askedFor.values()], asked_of_you: [...askedOfYou.values()] };
 }
 
 /* ---- adding ---- */
