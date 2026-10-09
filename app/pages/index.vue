@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * Browse: every cover at once, sectioned by genre, filtered by age band and by section, with
- * your own books hideable (docs/ui.md, ADR 0017). The filters live in the address bar.
+ * Browse: every cover at once, sectioned by genre, filtered by age band and by section, or cut to
+ * just your own (docs/ui.md, ADR 0017). The filters live in the address bar and sit inside a
+ * plain <details>, closed by default; its one line says what is set and offers to clear it.
  */
 import { AGE_BANDS, GENRES } from "~~/shared/schema";
 
@@ -31,17 +32,34 @@ function queryChoice<T extends string>(key: string, choices: readonly T[], fallb
 
 const age = queryChoice("age", AGES, "all");
 const section = queryChoice("section", SECTIONS, "all");
-const hideMine = computed({
-  get: () => route.query.mine === "hide",
-  set: (hide) => router.replace({ query: { ...route.query, mine: hide ? "hide" : undefined } }),
+const justMine = computed({
+  get: () => route.query.mine === "just",
+  set: (just) => router.replace({ query: { ...route.query, mine: just ? "just" : undefined } }),
 });
+
+/** What is set, in words, for the closed accordion's one line. Empty when nothing is. */
+const active = computed(() =>
+  [
+    age.value !== "all" ? `ages ${age.value}` : null,
+    section.value !== "all" ? section.value : null,
+    justMine.value ? "just mine" : null,
+  ].filter((x): x is string => x !== null),
+);
+
+/** Open or closed, this visit only. Closed by default; the summary line says what is set. */
+const open = ref(false);
+
+function clearFilters() {
+  const { age: _a, section: _s, mine: _m, ...rest } = route.query;
+  router.replace({ query: rest });
+}
 
 const shown = computed(() =>
   books.value.filter(
     (i) =>
       (age.value === "all" || i.age_band === age.value) &&
       (section.value === "all" || i.genre === section.value) &&
-      !(hideMine.value && i.yours),
+      (!justMine.value || i.yours),
   ),
 );
 
@@ -60,40 +78,57 @@ useHead({ title: "homerton swap shop" });
     <SiteHeader />
 
     <div class="filters">
-      <div class="filters__rows">
-        <div class="filters__ages">
-          <span>age</span>
-          <button
-            v-for="band in AGES"
-            :key="band"
-            type="button"
-            class="filter"
-            :aria-pressed="age === band"
-            @click="age = band"
-          >
-            {{ band }}
-          </button>
-        </div>
-        <div class="filters__ages">
-          <span>section</span>
-          <button
-            v-for="name in SECTIONS"
-            :key="name"
-            type="button"
-            class="filter"
-            :aria-pressed="section === name"
-            @click="section = name"
-          >
-            {{ name }}
-          </button>
-        </div>
-      </div>
-      <div v-if="books.length > 0" class="filters__count">
-        <span class="filters__total">{{ shown.length }} on the shelf. faded ones are reserved.</span>
-        <button type="button" class="filter" @click="hideMine = !hideMine">
-          {{ hideMine ? "show mine" : "hide mine" }}
+      <div class="filters__bar">
+        <details class="filters__details" :open="open" @toggle="open = ($event.target as HTMLDetailsElement).open">
+          <summary class="filters__summary">
+            <span class="filters__toggle">{{ open ? "hide filters" : "show filters" }}</span>
+            <span v-if="active.length > 0" class="filters__active">{{ active.join(", ") }}</span>
+          </summary>
+          <div class="filters__rows">
+            <div class="filters__ages">
+              <span>age</span>
+              <button
+                v-for="band in AGES"
+                :key="band"
+                type="button"
+                class="filter"
+                :aria-pressed="age === band"
+                @click="age = band"
+              >
+                {{ band }}
+              </button>
+            </div>
+            <div class="filters__ages">
+              <span>section</span>
+              <button
+                v-for="name in SECTIONS"
+                :key="name"
+                type="button"
+                class="filter"
+                :aria-pressed="section === name"
+                @click="section = name"
+              >
+                {{ name }}
+              </button>
+            </div>
+            <div class="filters__ages">
+              <span>whose</span>
+              <button type="button" class="filter" :aria-pressed="!justMine" @click="justMine = false">
+                everyone's
+              </button>
+              <button type="button" class="filter" :aria-pressed="justMine" @click="justMine = true">
+                just mine
+              </button>
+            </div>
+          </div>
+        </details>
+        <button v-if="active.length > 0" type="button" class="filter" @click="clearFilters">
+          clear filters
         </button>
       </div>
+      <span v-if="books.length > 0" class="filters__total">
+        {{ shown.length }} on the shelf. faded ones are reserved.
+      </span>
     </div>
 
     <main v-if="books.length === 0" class="shelf">
