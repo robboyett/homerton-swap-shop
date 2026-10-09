@@ -373,19 +373,21 @@ describe("requests (ADR 0013)", () => {
   it("groups live books by the other person, with their number, oldest ask first", async () => {
     // asker holds two of owner's books and one of bystander's; bystander holds one of owner's.
     const second = await freshItem();
-    const [bystanders] = await createItems(db, bystander, [
-      {
-        isbn: null,
-        title: "Alex's book",
-        author: null,
-        blurb: null,
-        cover_url: null,
-        genre: "chapter books",
-        age_band: "7-9",
-      },
-    ]);
+    const bystanders = one(
+      await createItems(db, bystander, [
+        {
+          isbn: null,
+          title: "Alex's book",
+          author: null,
+          blurb: null,
+          cover_url: null,
+          genre: "chapter books",
+          age_band: "7-9",
+        },
+      ]),
+    );
     await reserve(db, itemId, asker);
-    await reserve(db, bystanders ?? "", asker);
+    await reserve(db, bystanders, asker);
     await reserve(db, second, bystander);
     // Two asks in one millisecond tie; make the first one a day old so "oldest first" is tested,
     // not the clock.

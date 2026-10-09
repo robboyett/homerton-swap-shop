@@ -253,7 +253,6 @@ export const requestBookSchema = shelfBookSchema
   .pick({
     id: true,
     title: true,
-    author: true,
     cover_url: true,
     photo_url: true,
   })

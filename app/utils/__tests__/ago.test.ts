@@ -13,6 +13,8 @@ describe("ago", () => {
     expect(ago(at(13), now)).toBe("13 days ago");
     expect(ago(at(14), now)).toBe("2 weeks ago");
     expect(ago(at(42), now)).toBe("6 weeks ago");
+    expect(ago(at(59), now)).toBe("8 weeks ago");
+    expect(ago(at(60), now)).toBe("2 months ago");
     expect(ago(at(61), now)).toBe("2 months ago");
   });
 });

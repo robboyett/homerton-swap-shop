@@ -136,7 +136,6 @@ export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
     .select({
       id: items.id,
       title: items.title,
-      author: items.author,
       cover_url: items.coverUrl,
       photo_url: items.photoUrl,
       reserved_at: items.reservedAt,
@@ -164,7 +163,6 @@ export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
     const book = {
       id: r.id,
       title: r.title,
-      author: r.author,
       cover_url: r.cover_url,
       photo_url: r.photo_url,
       reserved_at: (r.reserved_at ?? new Date(0)).toISOString(),
