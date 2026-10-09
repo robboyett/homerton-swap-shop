@@ -387,6 +387,12 @@ describe("requests (ADR 0013)", () => {
     await reserve(db, itemId, asker);
     await reserve(db, bystanders ?? "", asker);
     await reserve(db, second, bystander);
+    // Two asks in one millisecond tie; make the first one a day old so "oldest first" is tested,
+    // not the clock.
+    await db
+      .update(items)
+      .set({ reservedAt: new Date(Date.now() - 86_400_000) })
+      .where(eq(items.id, itemId));
 
     const mine = await requestsFor(db, asker);
     expect(
