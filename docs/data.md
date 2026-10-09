@@ -20,7 +20,7 @@ The people. Rows are made by Rob on the admin screen, never by sign-up.
 | `email` | text, unique | The username, lower-cased. An identifier and nothing else: never shown to another member, never written to ([ADR 0009](adr/0009-sign-in-with-email.md)) |
 | `first_name` | text | First name only. It is what the other person sees |
 | `whatsapp_number` | text | E.164, e.g. `+447700900123`. Shown only to the other side of a live reservation |
-| `password_hash` | text | scrypt. Set from a one-time password Rob hands over |
+| `password_hash` | text | scrypt. Set from a password Rob hands over, shown to him once; he sets a new one from the admin screen |
 | `is_admin` | boolean | Rob, and nobody else at first |
 | `invited_by` | uuid → profiles.id | Who vouched for them |
 | `removed_at` | timestamptz, null | Out of the shop ([ADR 0012](adr/0012-removing-keeps-the-record.md)): cannot sign in, books removed, reservations released. An admin can let them back in |
