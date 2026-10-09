@@ -161,8 +161,11 @@ export const shelfBookSchema = itemSchema
     approx_count: true,
   })
   .extend({
-    /** Yours, as the signed-in person. A fact about yourself, not about anyone else (ADR 0017). */
-    mine: z.boolean(),
+    /**
+     * You own it. A fact about yourself, not about anyone else (ADR 0017). Not to be confused
+     * with the page state "mine", which means you have reserved it.
+     */
+    yours: z.boolean(),
   });
 
 /**

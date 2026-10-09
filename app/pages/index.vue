@@ -41,7 +41,7 @@ const shown = computed(() =>
     (i) =>
       (age.value === "all" || i.age_band === age.value) &&
       (section.value === "all" || i.genre === section.value) &&
-      !(hideMine.value && i.mine),
+      !(hideMine.value && i.yours),
   ),
 );
 

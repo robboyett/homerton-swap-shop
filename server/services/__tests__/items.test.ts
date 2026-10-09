@@ -241,10 +241,10 @@ describe("what a page may see (docs/data.md, rule 4)", () => {
         "genre",
         "id",
         "kind",
-        "mine",
         "photo_url",
         "status",
         "title",
+        "yours",
       ]);
     }
   });
@@ -538,12 +538,12 @@ describe("which shelf books are yours (ADR 0017)", () => {
       },
     ]);
     const forAsker = await listShelf(db, asker);
-    expect(forAsker.map((b) => [b.title, b.mine])).toEqual([
+    expect(forAsker.map((b) => [b.title, b.yours])).toEqual([
       ["Sam's book", true],
       ["The Lighthouse Mouse", false],
     ]);
     const forNosy = await listShelf(db, bystander);
-    expect(forNosy.every((b) => b.mine === false)).toBe(true);
+    expect(forNosy.every((b) => b.yours === false)).toBe(true);
     expect(JSON.stringify(forNosy)).not.toContain("owner");
   });
 });

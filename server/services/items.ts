@@ -30,7 +30,7 @@ export type { Db };
 const OFF_THE_SHELF: ("collected" | "removed")[] = ["collected", "removed"];
 
 /** Whether this book is the viewer's own: a boolean about yourself, nothing about anyone else. */
-function mineColumn(viewerId: string) {
+function yoursColumn(viewerId: string) {
   return sql<boolean>`${items.ownerId} = ${viewerId}`;
 }
 
@@ -53,7 +53,7 @@ const shelfColumns = {
  */
 export async function listShelf(db: Db, viewerId: string): Promise<ShelfBook[]> {
   return db
-    .select({ ...shelfColumns, mine: mineColumn(viewerId) })
+    .select({ ...shelfColumns, yours: yoursColumn(viewerId) })
     .from(items)
     .where(notInArray(items.status, OFF_THE_SHELF))
     .orderBy(desc(items.createdAt), items.title);
@@ -67,7 +67,7 @@ export async function moreInGenre(
   viewerId: string,
 ): Promise<ShelfBook[]> {
   return db
-    .select({ ...shelfColumns, mine: mineColumn(viewerId) })
+    .select({ ...shelfColumns, yours: yoursColumn(viewerId) })
     .from(items)
     .where(
       and(eq(items.genre, genre), notInArray(items.status, OFF_THE_SHELF), ne(items.id, exceptId)),
@@ -125,7 +125,7 @@ export async function bookPage(db: Db, itemId: string, viewerId: string): Promis
   return {
     ...book,
     created_at: created_at.toISOString(),
-    mine: owner_id === viewerId,
+    yours: owner_id === viewerId,
     state,
     contact,
     can_undo: state === "collected" && (owner_id === viewerId || reserved_by === viewerId),
@@ -406,7 +406,7 @@ export async function listForAdmin(db: Db, adminId: string): Promise<AdminBook[]
   const rows = await db
     .select({
       ...shelfColumns,
-      mine: mineColumn(adminId),
+      yours: yoursColumn(adminId),
       owner_first_name: profiles.firstName,
       removed_at: items.removedAt,
       removed_reason: items.removedReason,
