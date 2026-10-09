@@ -6,15 +6,32 @@
  */
 import type { RequestBook, RequestGroup } from "~~/shared/schema";
 
-const { data, error, refresh } = await useFetch("/api/requests");
+const { data, error, refresh: refetch } = await useFetch("/api/requests");
 const askedFor = computed(() => data.value?.asked_for ?? []);
 const askedOfYou = computed(() => data.value?.asked_of_you ?? []);
 const nothing = computed(() => askedFor.value.length === 0 && askedOfYou.value.length === 0);
 
 const busy = ref(false);
 const note = ref("");
-/** Books ticked as collected on this visit. They stay in the list, marked, until the list reloads. */
+/** Books ticked as collected on this visit. They stay in the list, marked, until you leave. */
 const collected = ref(new Set<string>());
+/** The rows behind those ticks, so a refresh can put them back where they were. */
+const kept = new Map<string, { person: RequestGroup["person"]; book: RequestBook }>();
+
+/** Refetch, then re-seat any book ticked as collected this visit (ADR 0016, point 2). */
+async function refresh() {
+  await refetch();
+  if (!data.value || kept.size === 0) return;
+  const groups = data.value.asked_for.map((g) => ({ ...g, books: [...g.books] }));
+  for (const { person, book } of kept.values()) {
+    if (groups.some((g) => g.books.some((b) => b.id === book.id))) continue;
+    const group = groups.find((g) => g.person.whatsapp_number === person.whatsapp_number);
+    if (group) group.books.push(book);
+    else groups.push({ person, books: [book] });
+  }
+  data.value = { ...data.value, asked_for: groups };
+}
+useLive(refresh, () => busy.value);
 /** Bumped after every attempt, so a failed tick is remounted unticked. */
 const attempts = ref(0);
 
@@ -43,8 +60,15 @@ async function move(book: RequestBook, which: "collect" | "uncollect" | "release
   note.value = "";
   try {
     await $fetch(`/api/items/${book.id}/${which}`, { method: "POST" });
-    if (which === "collect") collected.value.add(book.id);
-    if (which === "uncollect") collected.value.delete(book.id);
+    if (which === "collect") {
+      collected.value.add(book.id);
+      const group = askedFor.value.find((g) => g.books.some((b) => b.id === book.id));
+      if (group) kept.set(book.id, { person: group.person, book });
+    }
+    if (which === "uncollect") {
+      collected.value.delete(book.id);
+      kept.delete(book.id);
+    }
     if (which === "release") drop(book.id);
   } catch (e) {
     const err = e as { statusCode?: number; data?: { message?: string } };
