@@ -66,7 +66,7 @@ useHead({ title: "homerton swap shop" });
             :to="`/books/${bookItem.id}`"
             :aria-label="`${bookItem.title}, ages ${bookItem.age_band}${bookItem.status === 'reserved' ? ', reserved' : ''}`"
           >
-            <BookCover :book="bookItem" :reserved="bookItem.status === 'reserved'" />
+            <BookCover :book="bookItem" :reserved="bookItem.status === 'reserved'" labelled />
           </NuxtLink>
         </div>
       </section>

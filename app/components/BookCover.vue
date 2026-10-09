@@ -1,6 +1,8 @@
 <script setup lang="ts">
 /**
- * A cover: 2:3 with a 5% spine strip down the left (docs/ui.md). Real art when the book has
+ * A cover: 2:3 with a 5% spine strip down the left (docs/ui.md). With `labelled`, a slim ink bar
+ * with the title and author rises along the foot while a pointer is over it, and only then: the
+ * grid stays clean until you ask (Rob, 9 Oct). Touch screens never hover; the tap goes to the page. Real art when the book has
  * any; otherwise one of the canvas's fifty coloured designs, chosen by the book's id
  * (shared/covers.ts). The link around it carries the accessible name, so the image has none.
  */
@@ -8,9 +10,17 @@ import { type CoverVariant, coverFor } from "~~/shared/covers";
 import type { ShelfBook } from "~~/shared/schema";
 
 const props = defineProps<{
-  book: Pick<ShelfBook, "id" | "cover_url" | "photo_url">;
+  book: Pick<ShelfBook, "id" | "cover_url" | "photo_url"> &
+    Partial<Pick<ShelfBook, "title" | "author">>;
   reserved?: boolean;
+  /** Show the title and author in a slim bar along the foot of the cover while the pointer is over it. */
+  labelled?: boolean;
 }>();
+
+/** "title, author", or just the title. One line; the bar clips the rest. */
+const label = computed(() =>
+  props.book.author ? `${props.book.title}, ${props.book.author}` : (props.book.title ?? ""),
+);
 
 const art = computed(() => props.book.photo_url ?? props.book.cover_url);
 const cover = computed(() => coverFor(props.book.id));
@@ -54,5 +64,6 @@ const shapes = computed(() => DESIGNS[cover.value.variant](cover.value.fg));
       <span class="cover__shape" :style="shapes[1]" />
     </template>
     <span class="cover__spine" />
+    <span v-if="labelled && label" class="cover__label" aria-hidden="true">{{ label }}</span>
   </span>
 </template>
