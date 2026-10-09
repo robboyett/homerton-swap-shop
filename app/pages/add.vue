@@ -184,7 +184,12 @@ async function publish() {
 
 /** A seed for the plain cover while the book has no id yet: the isbn, or failing that the title. */
 function coverOf(book: NewBook) {
-  return { id: book.isbn ?? book.title, cover_url: book.cover_url, photo_url: null };
+  // No title on the pile's small covers: the chosen book's title is printed beside them.
+  return {
+    id: book.isbn ?? book.title,
+    cover_url: book.cover_url,
+    photo_url: null,
+  };
 }
 
 useHead({ title: "add books · homerton swap shop" });

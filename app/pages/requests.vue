@@ -114,7 +114,7 @@ useHead({ title: "requests · homerton swap shop" });
           <ul class="requests__books">
             <li v-for="book in group.books" :key="book.id" class="request">
               <NuxtLink :to="`/books/${book.id}`" class="request__cover">
-                <BookCover :book="book" />
+                <BookCover :book="{ id: book.id, cover_url: book.cover_url, photo_url: book.photo_url }" />
               </NuxtLink>
               <div class="stack request__body">
                 <NuxtLink :to="`/books/${book.id}`">{{ book.title }}</NuxtLink>
@@ -155,7 +155,7 @@ useHead({ title: "requests · homerton swap shop" });
           <ul class="requests__books">
             <li v-for="book in group.books" :key="book.id" class="request">
               <NuxtLink :to="`/books/${book.id}`" class="request__cover">
-                <BookCover :book="book" />
+                <BookCover :book="{ id: book.id, cover_url: book.cover_url, photo_url: book.photo_url }" />
               </NuxtLink>
               <div class="stack request__body">
                 <NuxtLink :to="`/books/${book.id}`">{{ book.title }}</NuxtLink>

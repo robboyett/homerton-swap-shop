@@ -292,10 +292,19 @@ button {
 
 /* ---- covers ---- */
 
+/* The slot: 2:3, so the grid's rows line up whatever shape the art turns out to be. */
 .cover {
   position: relative;
   display: block;
   aspect-ratio: 2 / 3;
+}
+
+.cover--reserved {
+  opacity: 0.35;
+}
+
+/* A cover with no art fills its slot with one of the canvas's designs. */
+.cover--plain {
   overflow: hidden;
   border-radius: 2px;
   box-shadow: var(--cover-shadow);
@@ -305,16 +314,37 @@ button {
   position: absolute;
 }
 
-.cover--reserved {
-  opacity: 0.35;
-}
-
+/*
+ * Real art at its own proportions, full width, standing on the foot of the slot. A square or
+ * wide cover is shorter and the space above is shelf; one taller than 2:3 fits the height and is
+ * centred, which object-fit handles once max-height clamps. The shadow follows the picture, not
+ * the box, so a tall cover's clear sides cast none.
+ */
 .cover__art {
   position: absolute;
-  inset: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  border-radius: 2px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.08)) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.1));
+}
+
+/* The title on a cover with no art: top of the cover, the design's second colour, three lines at most. */
+.cover__title {
+  position: absolute;
+  top: 9%;
+  right: 10%;
+  left: 12%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .cover__spine {

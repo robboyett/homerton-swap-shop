@@ -25,10 +25,10 @@ Lowercase, plain, British English, sentence case for titles, no emoji. "I'd like
 
 Covers lead. Everything else is text.
 
-- Ratio 2:3, radius 2px
-- Shadow `0 1px 1px rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.10)`
-- A 5% dark spine strip down the left: `rgba(0,0,0,0.14)`
-- No text on covers in the grid. While a pointer is over one, a slim bar drops in from the top of the viewport, full width, ink at 88% (`--ink-veil`) with ground text, names it: title, then author, one line. Moving to another cover replaces the text; leaving clears it. Hover only; touch screens never see it
+- Every cover has a 2:3 slot, so the grid's rows line up. Real art is drawn at its own proportions, full width, standing on the foot of the slot; nothing is cropped. A cover with no art fills the slot with one of the canvas's fifty designs
+- Radius 2px. Shadow `0 1px 1px rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.10)`, following the picture rather than the slot
+- A 5% dark spine strip down the left, `rgba(0,0,0,0.14)`, on covers with no art; real art has its own
+- No text added to covers. A cover with no art prints its title at the top in its design's second colour, as a cover does; up to three lines. While a pointer is over one, a slim bar drops in from the top of the viewport, full width, ink at 88% (`--ink-veil`) with ground text, names it: title, then author, one line. Moving to another cover replaces the text; leaving clears it. Hover only; touch screens never see it
 - Reserved covers drop to `opacity: 0.35`
 
 ## Grids
@@ -68,7 +68,8 @@ Where a shipped page differs from `docs/design/`, add a row here with the reason
 | Everywhere | An icon (a book cover in ink), a description for link previews, and an error page in the house look | The first things a stranger sees from a pasted link, a tab or a home screen were the framework's defaults. Nothing on the canvas covers them (9 Oct) |
 | Book detail | On your own book, "change section or age" opens the pile's two pickers inline, and "take it off the shelf" asks once more before acting | Owners look after their own books (ADR 0018); drawn like the pile and the admin screen, not on the canvas |
 | Browse, book detail | A bar that drops in from the top of the viewport names the hovered cover | Rob found small or absent titles hard to read on the shelf and asked for it (9 Oct). It exists only while a pointer is over a cover, so the canvas's clean grid is what you see at rest. At the top, not the foot, because the browser shows the link's address at the foot |
-| Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id | Rob asked that blank covers stay colourful like the mocks (8 Oct). Real art replaces it as soon as a book has a `cover_url` or `photo_url` |
+| Browse, book detail | A book with no cover art draws one of the canvas's fifty cover designs, chosen by a hash of its id, with its title printed at the top; the same-coloured shapes start at half height or lower, so three lines of title never run into them. The small covers on requests and in the pile carry no title, since it is printed beside them | Rob asked that blank covers stay colourful like the mocks (8 Oct) and, before launch, that a phone could tell what an anonymous cover is (9 Oct). Only covers with no art carry text |
+| Browse, book detail | Real art keeps its own proportions and stands on the foot of the 2:3 slot, rather than filling it | A near-square picture book was being cropped. Rob asked for the cover to follow the picture without breaking the grid (9 Oct) |
 | Add books | The corner marks sit at the frame's edges and the caption 16px up; the board draws an inner target box with the caption 24px up | The camera fills the frame, so there is no inner box to mark. Four corners at the edge say the same thing in less |
 | Book detail, add books | "add a photo of the cover" under a cover with no art; a photo replaces the coloured shapes | Rob asked that anyone could fill the gaps (9 Oct, ADR 0015). Not on the canvas |
 | Welcome | No board exists. The first sign-in: what this is, how it works, and the one box for the mobile number, drawn from the rules alone | Rob asked for something short on first sign-in (9 Oct, ADR 0014). A page shown once, not a pop-up |
