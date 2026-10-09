@@ -63,6 +63,37 @@ async function move(which: Move) {
   }
 }
 
+/** Anyone may fill a missing cover (ADR 0015). The phone shrinks the photo first. */
+async function addPhoto(file: File) {
+  busy.value = true;
+  note.value = "";
+  try {
+    const body = new FormData();
+    body.append("photo", await shrinkPhoto(file), "cover.jpg");
+    const result = await $fetch(`/api/items/${id}/photo`, { method: "POST", body });
+    if (data.value) data.value = { ...data.value, book: result.book };
+  } catch (e) {
+    const err = e as { statusCode?: number; data?: { message?: string } };
+    note.value = err.data?.message ?? "that photo didn't save. try again in a moment.";
+    await refresh();
+  } finally {
+    busy.value = false;
+  }
+}
+
+/** Admins only (ADR 0015): take a photo down. The plain cover comes back. */
+async function removePhoto() {
+  busy.value = true;
+  try {
+    const result = await $fetch(`/api/items/${id}/photo`, { method: "DELETE" });
+    if (data.value) data.value = { ...data.value, book: result.book };
+  } catch {
+    note.value = "that didn't save. try again in a moment.";
+  } finally {
+    busy.value = false;
+  }
+}
+
 /** Admins only (ADR 0012): off the shelf for everyone, record kept, back to the shelf. */
 async function takeOff() {
   busy.value = true;
@@ -102,8 +133,16 @@ useHead({ title: () => `${book.value?.title ?? "book"} · homerton swap shop` })
     </div>
 
     <div v-if="book" class="book">
-      <div class="book__cover">
+      <div class="book__cover stack stack--gap">
         <BookCover :book="book" />
+        <PhotoPicker v-if="!book.cover_url && !book.photo_url" :disabled="busy" @picked="addPhoto">
+          add a photo of the cover
+        </PhotoPicker>
+        <div v-else-if="viewer?.is_admin && book.photo_url">
+          <button type="button" class="text-button" :disabled="busy" @click="removePhoto">
+            remove the photo
+          </button>
+        </div>
       </div>
 
       <div class="book__body">
