@@ -245,3 +245,33 @@ export const adminBookSchema = shelfBookSchema.extend({
 });
 
 export type AdminBook = z.infer<typeof adminBookSchema>;
+
+/* ---- requests (ADR 0013): the mine and owner states, cut by person instead of by book ---- */
+
+/** A book inside a request group. Reserved only; the date is when it was asked for. */
+export const requestBookSchema = shelfBookSchema
+  .pick({
+    id: true,
+    title: true,
+    author: true,
+    cover_url: true,
+    photo_url: true,
+  })
+  .extend({ reserved_at: z.string() });
+
+/** One other person and every live book between you. Their number, because you are one side. */
+export const requestGroupSchema = z.object({
+  person: profileSchema.pick({ first_name: true, whatsapp_number: true }),
+  books: z.array(requestBookSchema).min(1),
+});
+
+export const requestsSchema = z.object({
+  /** Books you hold, grouped by their owner. */
+  asked_for: z.array(requestGroupSchema),
+  /** Your books someone holds, grouped by who. */
+  asked_of_you: z.array(requestGroupSchema),
+});
+
+export type RequestBook = z.infer<typeof requestBookSchema>;
+export type RequestGroup = z.infer<typeof requestGroupSchema>;
+export type Requests = z.infer<typeof requestsSchema>;

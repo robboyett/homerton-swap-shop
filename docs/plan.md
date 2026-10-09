@@ -26,6 +26,7 @@ This table is closed. Changing a row is a conversation with Rob and an ADR, not 
 | Removing a book | Rob can take any book off the shelf. The record stays; it can go back | Moderation is Rob's job (ADR 0006). Keeping the record means a mistake is undone in one tap and a pattern stays visible to him ([ADR 0012](adr/0012-removing-keeps-the-record.md)) |
 | Removing an account | Rob can put someone out of the shop: they cannot sign in, their books come off the shelf, what they held goes back. Reversible. One admin, who cannot remove himself | A neighbourhood site needs a door that closes without burning the records ([ADR 0012](adr/0012-removing-keeps-the-record.md)). Editing a name or number comes with it; a second admin does not |
 | Changing a password | Rob does it, from the admin screen. No self-service change or reset | The password he hands over is theirs until he sets another. A hundred neighbours do not need a forgot-password flow, and the site sends no mail to carry one (Rob, 9 Oct; [ADR 0009](adr/0009-sign-in-with-email.md)) |
+| Requests | One screen: what you've asked for and what's asked of you, each grouped by the other person, with their WhatsApp link once per group, every book dated from the ask, and tick and put-back from the list | So one walk collects one household's books, and a six-week-old ask is visible without a nudge or an expiry (Rob, 9 Oct; [ADR 0013](adr/0013-requests-are-grouped-by-person.md)) |
 | Reserving your own book | Allowed | Harmless: you see only your own number and can release it again. Not worth a rule nobody would have guessed ([ADR 0008](adr/0008-either-side-can-undo.md)) |
 | Collecting | The requester ticks "we've collected it"; undoable | The person who knows is the person who turned up |
 | Reservation expiry | None | A nudge after a week is an option, not a decision. See the open questions |
@@ -49,7 +50,7 @@ Rob's to answer. An agent that needs one of these answered stops and asks.
 | Should a reservation get a gentle nudge after a week? | Decided against expiry. A nudge is undesigned |
 | Toys and clothes: same model, different filters? | Same data model is the assumption. Undesigned |
 | Consent to share WhatsApp numbers | Proposed at invite time, so reserving never surprises anyone. Not built |
-| "requests", the signed-in profile, the admin invite screen | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in, the profile (`/account`) and the invite screen (`/admin`, with passwords Rob hands over) are built; "requests" is still undesigned |
+| The signed-in profile, the admin invite screen, "requests" | In the nav in the design, no screens drawn. Rob asked for them drawn plainly from `ui.md` (8 Oct): sign-in, the profile (`/account`), the invite screen (`/admin`) and requests (`/requests`, [ADR 0013](adr/0013-requests-are-grouped-by-person.md)) are all built. Nothing undrawn remains in the nav |
 
 ---
 

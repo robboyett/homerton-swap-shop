@@ -410,6 +410,48 @@ button {
   opacity: 0.5;
 }
 
+/* ---- requests: groups of books by person (ADR 0013) ---- */
+
+.requests {
+  max-width: 480px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.group + .group {
+  margin-top: 16px;
+  border-top: 1px solid var(--spine);
+}
+
+.requests__books {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.request {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.request__cover {
+  flex: 0 0 64px;
+}
+
+.request__body {
+  flex: 1 1 auto;
+  gap: 4px;
+}
+
 /* ---- add books: the camera frame, as the Scan board draws it ---- */
 
 .scan {

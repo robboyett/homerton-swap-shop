@@ -18,6 +18,7 @@ import {
   moreInGenre,
   release,
   removeItem,
+  requestsFor,
   reserve,
   restoreItem,
   uncollect,
@@ -365,5 +366,71 @@ describe("moderation (ADR 0012)", () => {
     const page = await bookPage(db, itemId, bystander);
     expect(page?.state).toBe("available");
     expect((await statusOf(itemId)).removedAt).toBeNull();
+  });
+});
+
+describe("requests (ADR 0013)", () => {
+  it("groups live books by the other person, with their number, oldest ask first", async () => {
+    // asker holds two of owner's books and one of bystander's; bystander holds one of owner's.
+    const second = await freshItem();
+    const [bystanders] = await createItems(db, bystander, [
+      {
+        isbn: null,
+        title: "Alex's book",
+        author: null,
+        blurb: null,
+        cover_url: null,
+        genre: "chapter books",
+        age_band: "7-9",
+      },
+    ]);
+    await reserve(db, itemId, asker);
+    await reserve(db, bystanders ?? "", asker);
+    await reserve(db, second, bystander);
+
+    const mine = await requestsFor(db, asker);
+    expect(
+      mine.asked_for.map((g) => [g.person.first_name, g.person.whatsapp_number, g.books.length]),
+    ).toEqual([
+      ["priya", "+447700900123", 1],
+      ["alex", "+447700900789", 1],
+    ]);
+    expect(mine.asked_of_you).toEqual([]);
+    expect(mine.asked_for[0]?.books[0]?.reserved_at).toMatch(/^20\d\d-/);
+
+    const owners = await requestsFor(db, owner);
+    expect(owners.asked_for).toEqual([]);
+    expect(
+      owners.asked_of_you.map((g) => [
+        g.person.first_name,
+        g.person.whatsapp_number,
+        g.books.map((b) => b.title),
+      ]),
+    ).toEqual([
+      ["sam", "+447700900456", ["The Lighthouse Mouse"]],
+      ["alex", "+447700900789", ["The Lighthouse Mouse"]],
+    ]);
+  });
+
+  it("shows only reserved books, and nothing of other people's business", async () => {
+    const second = await freshItem();
+    await reserve(db, itemId, asker);
+    await collect(db, itemId, asker);
+    await reserve(db, second, asker);
+    await removeItem(db, second, null);
+    expect(await requestsFor(db, asker)).toEqual({ asked_for: [], asked_of_you: [] });
+    // A bystander with no part in anything sees nothing, and no number.
+    await restoreItem(db, second);
+    await reserve(db, second, asker);
+    const nosy = await requestsFor(db, bystander);
+    expect(nosy).toEqual({ asked_for: [], asked_of_you: [] });
+    expect(JSON.stringify(nosy)).not.toContain("+44");
+  });
+
+  it("puts your own book, reserved by you, under what you've asked for and nowhere else", async () => {
+    await reserve(db, itemId, owner);
+    const r = await requestsFor(db, owner);
+    expect(r.asked_for.map((g) => g.person.first_name)).toEqual(["priya"]);
+    expect(r.asked_of_you).toEqual([]);
   });
 });
