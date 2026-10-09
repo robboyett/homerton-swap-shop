@@ -49,7 +49,7 @@ What you'd change:
 
 1. **The name and the copy.** "homerton" is in the page title, the footer and `docs/plan.md`. The tone is lowercase and plain on purpose; see [docs/ui.md](docs/ui.md).
 2. **The genres and age bands** in `docs/ui.md` and `shared/schema.ts`, if you're swapping something other than kids' books.
-3. **Accounts.** There is no sign-up, by design. One admin creates each account by hand and hands over a one-time password, which assumes you already have a group of people who know each other. If you need open sign-up, this is the wrong starting point.
+3. **Accounts.** There is no sign-up, by design. One admin creates each account by hand and hands over a password, shown once, which assumes you already have a group of people who know each other. If you need open sign-up, this is the wrong starting point.
 4. **Hosting.** Nuxt on Vercel with a Neon database and Vercel Blob for photos. Nothing stops it running elsewhere; the vendor calls are all in `server/services/`.
 
 What you should keep: the phone-number gate, and the decision not to have an address field at all.
