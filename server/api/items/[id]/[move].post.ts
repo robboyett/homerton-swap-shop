@@ -8,7 +8,10 @@ import { db } from "../../../services/db/client";
 import { bookPage, collect, release, reserve, uncollect } from "../../../services/items";
 
 const MOVES = {
-  reserve: { run: reserve, refused: "someone else got there first" },
+  reserve: {
+    run: reserve,
+    refused: "someone else got there first, or you have not added your number yet",
+  },
   release: { run: release, refused: "that is not yours to put back" },
   collect: { run: collect, refused: "only the person who reserved it can tick this" },
   uncollect: { run: uncollect, refused: "nothing to undo" },

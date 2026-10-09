@@ -14,6 +14,7 @@ import {
   normaliseEmail,
   removeMember,
   restoreMember,
+  setNumber,
   setPassword,
   signIn,
   updateMember,
@@ -60,7 +61,13 @@ describe("sign in", () => {
 
   it("returns the browser shape, never the row", async () => {
     const me = await signIn(db, rob.email, rob.password);
-    expect(Object.keys(me ?? {}).sort()).toEqual(["email", "first_name", "id", "is_admin"]);
+    expect(Object.keys(me ?? {}).sort()).toEqual([
+      "email",
+      "first_name",
+      "has_number",
+      "id",
+      "is_admin",
+    ]);
   });
 });
 
@@ -110,6 +117,7 @@ describe("the admin screen", () => {
     expect(Object.keys(members[0] ?? {}).sort()).toEqual([
       "email",
       "first_name",
+      "has_number",
       "id",
       "invited_by_first_name",
       "is_admin",
@@ -204,5 +212,24 @@ describe("moderation of people (ADR 0012)", () => {
     expect(await restoreMember(db, priya.id)).toBe(true);
     expect((await signIn(db, "priya@example.com", rob.password))?.first_name).toBe("priya");
     expect((await listShelf(db)).map((b) => b.title)).toEqual(["Rob's book"]);
+  });
+});
+
+describe("the first sign-in (ADR 0014)", () => {
+  it("makes an account with no number, which the person gives once", async () => {
+    const admin = await createFirstAdmin(db, rob);
+    const { whatsapp_number: _dropped, ...noNumber } = {
+      ...rob,
+      email: "priya@example.com",
+      first_name: "priya",
+    };
+    const priya = await createProfile(db, noNumber, { invitedBy: admin?.id ?? null });
+    expect(priya.has_number).toBe(false);
+    expect((await listMembers(db)).find((m) => m.first_name === "priya")?.has_number).toBe(false);
+    expect(await setNumber(db, priya.id, "+447700900123")).toBe(true);
+    expect((await meById(db, priya.id))?.has_number).toBe(true);
+    // Once. After that it is Rob's to change.
+    expect(await setNumber(db, priya.id, "+447700900124")).toBe(false);
+    expect((await signIn(db, "priya@example.com", rob.password))?.has_number).toBe(true);
   });
 });

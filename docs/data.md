@@ -19,7 +19,7 @@ The people. Rows are made by Rob on the admin screen, never by sign-up.
 | `id` | uuid | |
 | `email` | text, unique | The username, lower-cased. An identifier and nothing else: never shown to another member, never written to ([ADR 0009](adr/0009-sign-in-with-email.md)) |
 | `first_name` | text | First name only. It is what the other person sees |
-| `whatsapp_number` | text | E.164, e.g. `+447700900123`. Shown only to the other side of a live reservation |
+| `whatsapp_number` | text, null | E.164, e.g. `+447700900123`. Null until the person gives it at their first sign-in ([ADR 0014](adr/0014-first-sign-in-collects-the-number.md)); without one they can browse but not reserve or publish. Shown only to the other side of a live reservation |
 | `password_hash` | text | scrypt. Set from a password Rob hands over, shown to him once; he sets a new one from the admin screen |
 | `is_admin` | boolean | Rob, and nobody else at first |
 | `invited_by` | uuid → profiles.id | Who vouched for them |

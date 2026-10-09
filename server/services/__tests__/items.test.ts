@@ -442,3 +442,25 @@ describe("requests (ADR 0013)", () => {
     expect(r.asked_of_you).toEqual([]);
   });
 });
+
+describe("a person with no number yet (ADR 0014)", () => {
+  it("can look but cannot ask: reserving is refused in the WHERE clause", async () => {
+    const rows = await db
+      .insert(profiles)
+      .values({
+        email: "new@example.com",
+        firstName: "new",
+        whatsappNumber: null,
+        passwordHash: "x",
+      })
+      .returning({ id: profiles.id });
+    const newcomer = one(rows).id;
+    expect(await reserve(db, itemId, newcomer)).toBe(false);
+    expect((await statusOf(itemId)).status).toBe("available");
+    await db
+      .update(profiles)
+      .set({ whatsappNumber: "+447700900321" })
+      .where(eq(profiles.id, newcomer));
+    expect(await reserve(db, itemId, newcomer)).toBe(true);
+  });
+});

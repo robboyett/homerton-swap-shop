@@ -33,8 +33,8 @@ export const profiles = pgTable("profiles", {
   /** The username. Lower-cased and trimmed by the service before it gets here (ADR 0009). */
   email: text("email").notNull().unique(),
   firstName: text("first_name").notNull(),
-  /** E.164. Shown only to the other side of a live reservation. */
-  whatsappNumber: text("whatsapp_number").notNull(),
+  /** E.164. Null until the person gives it at their first sign-in (ADR 0014). Shown only to the other side of a live reservation. */
+  whatsappNumber: text("whatsapp_number"),
   passwordHash: text("password_hash").notNull(),
   isAdmin: boolean("is_admin").notNull().default(false),
   /** Who vouched for them. A real reference, as docs/data.md has always declared it. */

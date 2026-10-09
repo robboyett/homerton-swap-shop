@@ -92,7 +92,7 @@ function invite() {
       body: {
         first_name: firstName.value,
         email: email.value,
-        whatsapp_number: number.value,
+        ...(number.value ? { whatsapp_number: number.value } : {}),
         password: password.value,
       },
     });
@@ -206,8 +206,8 @@ useHead({ title: "admin · homerton swap shop" });
           <input v-model="email" type="email" autocomplete="off" required >
         </label>
         <label class="field">
-          <span>whatsapp number, +44 then ten digits</span>
-          <input v-model="number" type="tel" autocomplete="off" placeholder="+447…" required >
+          <span>mobile number, if you have it. leave blank and they give it when they first sign in</span>
+          <input v-model="number" type="tel" autocomplete="off" placeholder="+447…" >
         </label>
         <label class="field">
           <span>their password. keep this one or type your own</span>
@@ -258,6 +258,7 @@ useHead({ title: "admin · homerton swap shop" });
               <span>{{ m.email }}</span>
               <span v-if="m.is_admin">admin</span>
               <span v-else-if="m.removed_at">out of the shop</span>
+              <span v-else-if="!m.has_number">not signed in yet</span>
               <span v-else-if="m.invited_by_first_name">invited by {{ m.invited_by_first_name }}</span>
               <template v-if="m.removed_at">
                 <button type="button" class="text-button" :disabled="busy" @click="restoreMember(m)">
