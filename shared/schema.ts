@@ -121,17 +121,24 @@ export const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
 export const viewerSchema = profileSchema.pick({ id: true, first_name: true, is_admin: true });
 
 /** What you may know about yourself: the viewer, plus your own email. Returned by /api/me only. */
-export const meSchema = viewerSchema.extend({ email: emailSchema });
+export const meSchema = viewerSchema.extend({
+  email: emailSchema,
+  /** False until the first sign-in collects the number (ADR 0014); the welcome page shows until then. */
+  has_number: z.boolean(),
+});
 
 export const signInSchema = z.object({ email: emailSchema, password: z.string().min(1) });
 
-/** A new account, as Rob fills it in. The password is the one-time one he hands over. */
+/** A new account, as Rob fills it in. The number is optional: the person gives it at their first sign-in (ADR 0014). */
 export const newProfileSchema = z.object({
   email: emailSchema,
   password: z.string().min(12, "at least 12 characters"),
   first_name: z.string().trim().min(1).max(40),
-  whatsapp_number: profileSchema.shape.whatsapp_number,
+  whatsapp_number: profileSchema.shape.whatsapp_number.optional(),
 });
+
+/** The welcome page's one box (ADR 0014). */
+export const numberSchema = z.object({ whatsapp_number: profileSchema.shape.whatsapp_number });
 
 export type Viewer = z.infer<typeof viewerSchema>;
 export type Me = z.infer<typeof meSchema>;
@@ -234,7 +241,7 @@ export const removeSchema = z.object({ reason: z.string().trim().max(200).option
  */
 export const memberEditSchema = z.object({
   first_name: newProfileSchema.shape.first_name,
-  whatsapp_number: newProfileSchema.shape.whatsapp_number.optional(),
+  whatsapp_number: profileSchema.shape.whatsapp_number.optional(),
 });
 
 /** A book as the admin screen lists it: whose it is, and whether it is off the shelf. */

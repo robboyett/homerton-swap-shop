@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ALTER COLUMN "whatsapp_number" DROP NOT NULL;

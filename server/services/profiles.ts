@@ -4,7 +4,7 @@
  * Everything returned from this file is the browser shape from shared/schema.ts, never a row:
  * the row carries a password hash and other people's emails, and neither leaves this folder.
  */
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Me, Member, NewProfile } from "../../shared/schema";
 import { hashPassword, verifyPassword } from "../utils/password";
@@ -33,7 +33,13 @@ function isUniqueViolation(e: unknown): boolean {
 }
 
 function asMe(row: Row): Me {
-  return { id: row.id, first_name: row.firstName, is_admin: row.isAdmin, email: row.email };
+  return {
+    id: row.id,
+    first_name: row.firstName,
+    is_admin: row.isAdmin,
+    email: row.email,
+    has_number: row.whatsappNumber !== null,
+  };
 }
 
 /**
@@ -79,7 +85,7 @@ export async function createProfile(
       .values({
         email: normaliseEmail(profile.email),
         firstName: profile.first_name.trim(),
-        whatsappNumber: profile.whatsapp_number,
+        whatsappNumber: profile.whatsapp_number ?? null,
         passwordHash: await hashPassword(profile.password),
         isAdmin: options.isAdmin ?? false,
         invitedBy: options.invitedBy,
@@ -119,6 +125,7 @@ export async function listMembers(db: Db): Promise<Member[]> {
       email: profiles.email,
       invited_by_first_name: inviter.firstName,
       removed_at: profiles.removedAt,
+      has_number: sql<boolean>`${profiles.whatsappNumber} is not null`,
     })
     .from(profiles)
     .leftJoin(inviter, eq(profiles.invitedBy, inviter.id))
@@ -197,6 +204,19 @@ export async function restoreMember(db: Db, id: string): Promise<boolean> {
     .update(profiles)
     .set({ removedAt: null })
     .where(eq(profiles.id, id))
+    .returning({ id: profiles.id });
+  return changed.length === 1;
+}
+
+/**
+ * The welcome page's one move (ADR 0014): a person gives their own number, once. Works only while
+ * there is none; after that the number is Rob's to change. False if it was already set.
+ */
+export async function setNumber(db: Db, id: string, number: string): Promise<boolean> {
+  const changed = await db
+    .update(profiles)
+    .set({ whatsappNumber: number })
+    .where(and(eq(profiles.id, id), isNull(profiles.whatsappNumber)))
     .returning({ id: profiles.id });
   return changed.length === 1;
 }

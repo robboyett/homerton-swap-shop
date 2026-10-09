@@ -410,6 +410,18 @@ button {
   opacity: 0.5;
 }
 
+/* ---- welcome: the first sign-in (ADR 0014) ---- */
+
+.welcome {
+  max-width: 480px;
+  margin-top: 56px;
+}
+
+.welcome .form {
+  max-width: none;
+  margin-top: 36px;
+}
+
 /* ---- requests: groups of books by person (ADR 0013) ---- */
 
 .requests {

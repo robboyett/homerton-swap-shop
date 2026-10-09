@@ -8,7 +8,7 @@
  * Authorisation is here and only here. Neon has no row-level security in this design (ADR 0002),
  * so there is nothing behind these checks. docs/data.md holds the rules they implement.
  */
-import { and, asc, desc, eq, inArray, ne, notInArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, notInArray, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import {
   type AdminBook,
@@ -109,8 +109,9 @@ export async function bookPage(db: Db, itemId: string, viewerId: string): Promis
   } = row;
 
   let contact: BookPage["contact"] = null;
-  if (state === "mine")
+  if (state === "mine" && owner_number) {
     contact = { first_name: book.owner_first_name, whatsapp_number: owner_number };
+  }
   if (state === "owner" && requester_first_name && requester_number) {
     contact = { first_name: requester_first_name, whatsapp_number: requester_number };
   }
@@ -170,7 +171,7 @@ export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
     // Your own book, reserved by you (ADR 0008): one line, under "you've asked for".
     if (r.reserved_by === viewerId) {
       const group = askedFor.get(r.owner_id) ?? {
-        person: { first_name: r.owner_first_name, whatsapp_number: r.owner_number },
+        person: { first_name: r.owner_first_name, whatsapp_number: r.owner_number ?? "" },
         books: [],
       };
       group.books.push(book);
@@ -178,7 +179,7 @@ export async function requestsFor(db: Db, viewerId: string): Promise<Requests> {
     } else {
       const key = r.reserved_by ?? "";
       const group = askedOfYou.get(key) ?? {
-        person: { first_name: r.requester_first_name, whatsapp_number: r.requester_number },
+        person: { first_name: r.requester_first_name, whatsapp_number: r.requester_number ?? "" },
         books: [],
       };
       group.books.push(book);
@@ -225,10 +226,13 @@ export async function createItems(db: Db, ownerId: string, books: NewBook[]): Pr
  * second finds no row matching and changes nothing. Never read the status and then write it.
  */
 export async function reserve(db: Db, itemId: string, viewerId: string): Promise<boolean> {
+  // Reserving is the moment a number gets shown to the owner, so a person without one cannot
+  // (ADR 0014). In the WHERE clause like every other rule: the database decides.
+  const hasNumber = sql`exists (select 1 from ${profiles} where ${profiles.id} = ${viewerId} and ${profiles.whatsappNumber} is not null)`;
   const changed = await db
     .update(items)
     .set({ status: "reserved", reservedBy: viewerId, reservedAt: new Date() })
-    .where(and(eq(items.id, itemId), eq(items.status, "available")))
+    .where(and(eq(items.id, itemId), eq(items.status, "available"), hasNumber))
     .returning({ id: items.id });
   return changed.length === 1;
 }
