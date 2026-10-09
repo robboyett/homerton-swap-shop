@@ -369,6 +369,43 @@ export async function uncollect(db: Db, itemId: string, viewerId: string): Promi
   return changed.length === 1;
 }
 
+/* ---- an owner looking after their own book (ADR 0018) ---- */
+
+/**
+ * The owner takes their own book off the shelf: the admin's removal with the owner as the guard.
+ * False if there is no such book, it is not theirs, or it is already off.
+ */
+export async function withdrawItem(db: Db, itemId: string, ownerId: string): Promise<boolean> {
+  const changed = await db
+    .update(items)
+    .set({
+      status: "removed",
+      removedAt: new Date(),
+      removedReason: "taken down by the owner",
+      reservedBy: null,
+      reservedAt: null,
+      collectedAt: null,
+    })
+    .where(and(eq(items.id, itemId), eq(items.ownerId, ownerId), ne(items.status, "removed")))
+    .returning({ id: items.id });
+  return changed.length === 1;
+}
+
+/** The owner corrects their own book's section or age band. False if it is not theirs. */
+export async function reshelve(
+  db: Db,
+  itemId: string,
+  ownerId: string,
+  to: { genre: ShelfBook["genre"]; age_band: ShelfBook["age_band"] },
+): Promise<boolean> {
+  const changed = await db
+    .update(items)
+    .set({ genre: to.genre, ageBand: to.age_band })
+    .where(and(eq(items.id, itemId), eq(items.ownerId, ownerId), ne(items.status, "removed")))
+    .returning({ id: items.id });
+  return changed.length === 1;
+}
+
 /* ---- moderation (ADR 0012): the caller has already checked the viewer is an admin ---- */
 
 /**

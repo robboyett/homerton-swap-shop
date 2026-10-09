@@ -288,3 +288,6 @@ export const requestsSchema = z.object({
 export type RequestBook = z.infer<typeof requestBookSchema>;
 export type RequestGroup = z.infer<typeof requestGroupSchema>;
 export type Requests = z.infer<typeof requestsSchema>;
+
+/** An owner correcting their own book's section or age (ADR 0018). Nothing else is editable. */
+export const reshelveSchema = z.object({ genre: genreSchema, age_band: ageBandSchema });

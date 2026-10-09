@@ -6,6 +6,8 @@
  * rule 4 of docs/data.md). This page only draws what it is given, and asks for one of the four
  * moves when a button is pressed.
  */
+import { AGE_BANDS, GENRES } from "~~/shared/schema";
+
 const route = useRoute();
 const id = String(route.params.id);
 const viewer = useViewer();
@@ -98,6 +100,50 @@ async function removePhoto() {
   try {
     const result = await $fetch(`/api/items/${id}/photo`, { method: "DELETE" });
     if (data.value) data.value = { ...data.value, book: result.book };
+  } catch {
+    note.value = "that didn't save. try again in a moment.";
+  } finally {
+    busy.value = false;
+  }
+}
+
+/** Owners only (ADR 0018): the same move as the admin's, guarded by ownership on the server. */
+const armed = ref(false);
+async function withdraw() {
+  if (!armed.value) {
+    armed.value = true;
+    return;
+  }
+  busy.value = true;
+  note.value = "";
+  try {
+    await $fetch(`/api/items/${id}/withdraw`, { method: "POST" });
+    await navigateTo("/");
+  } catch {
+    note.value = "that didn't save. try again in a moment.";
+  } finally {
+    busy.value = false;
+    armed.value = false;
+  }
+}
+
+/** Owners only (ADR 0018): the pile's two pickers, on the page. */
+const reshelving = ref(false);
+const draft = ref<{ genre: BookPage["genre"]; age_band: BookPage["age_band"] } | null>(null);
+function startReshelve() {
+  if (!book.value) return;
+  armed.value = false;
+  draft.value = { genre: book.value.genre, age_band: book.value.age_band };
+  reshelving.value = true;
+}
+async function saveReshelve() {
+  if (!draft.value) return;
+  busy.value = true;
+  note.value = "";
+  try {
+    const result = await $fetch(`/api/items/${id}`, { method: "PATCH", body: draft.value });
+    if (data.value) data.value = { ...data.value, book: result.book };
+    reshelving.value = false;
   } catch {
     note.value = "that didn't save. try again in a moment.";
   } finally {
@@ -239,7 +285,52 @@ useHead({ title: () => `${book.value?.title ?? "book"} · homerton swap shop` })
           <p v-if="note" class="mt-28" role="status">{{ note }}</p>
         </div>
 
-        <div v-if="viewer?.is_admin" class="mt-36">
+        <div v-if="book.yours" class="mt-36 stack stack--gap">
+          <template v-if="reshelving && draft">
+            <div class="choices">
+              <span>section</span>
+              <button
+                v-for="g in GENRES"
+                :key="g"
+                type="button"
+                class="filter"
+                :aria-pressed="draft.genre === g"
+                @click="draft.genre = g"
+              >
+                {{ g }}
+              </button>
+            </div>
+            <div class="choices">
+              <span>ages</span>
+              <button
+                v-for="band in AGE_BANDS"
+                :key="band"
+                type="button"
+                class="filter"
+                :aria-pressed="draft.age_band === band"
+                @click="draft.age_band = band"
+              >
+                {{ band }}
+              </button>
+            </div>
+            <div class="choices">
+              <button type="button" class="text-button" :disabled="busy" @click="saveReshelve">
+                save
+              </button>
+              <button type="button" class="text-button" @click="reshelving = false">leave it</button>
+            </div>
+          </template>
+          <div v-else class="choices">
+            <button type="button" class="text-button" :disabled="busy" @click="startReshelve">
+              change section or age
+            </button>
+            <button type="button" class="text-button" :disabled="busy" @click="withdraw">
+              {{ armed ? "sure? this takes it off the shelf for everyone" : "take it off the shelf" }}
+            </button>
+          </div>
+        </div>
+
+        <div v-else-if="viewer?.is_admin" class="mt-36">
           <button type="button" class="text-button" :disabled="busy" @click="takeOff">
             take it off the shelf
           </button>
