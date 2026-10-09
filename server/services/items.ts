@@ -29,6 +29,11 @@ export type { Db };
 /** Collected books are gone; removed ones were taken away (ADR 0012). Neither is on the shelf. */
 const OFF_THE_SHELF: ("collected" | "removed")[] = ["collected", "removed"];
 
+/** Whether this book is the viewer's own: a boolean about yourself, nothing about anyone else. */
+function yoursColumn(viewerId: string) {
+  return sql<boolean>`${items.ownerId} = ${viewerId}`;
+}
+
 const shelfColumns = {
   id: items.id,
   kind: items.kind,
@@ -44,11 +49,11 @@ const shelfColumns = {
 
 /**
  * The shelf: everything not yet collected, newest first, then by title so a pile published in
- * one go keeps a steady order. Carries nothing about people.
+ * one go keeps a steady order. Carries nothing about people beyond which books are yours.
  */
-export async function listShelf(db: Db): Promise<ShelfBook[]> {
+export async function listShelf(db: Db, viewerId: string): Promise<ShelfBook[]> {
   return db
-    .select(shelfColumns)
+    .select({ ...shelfColumns, yours: yoursColumn(viewerId) })
     .from(items)
     .where(notInArray(items.status, OFF_THE_SHELF))
     .orderBy(desc(items.createdAt), items.title);
@@ -59,9 +64,10 @@ export async function moreInGenre(
   db: Db,
   genre: ShelfBook["genre"],
   exceptId: string,
+  viewerId: string,
 ): Promise<ShelfBook[]> {
   return db
-    .select(shelfColumns)
+    .select({ ...shelfColumns, yours: yoursColumn(viewerId) })
     .from(items)
     .where(
       and(eq(items.genre, genre), notInArray(items.status, OFF_THE_SHELF), ne(items.id, exceptId)),
@@ -119,6 +125,7 @@ export async function bookPage(db: Db, itemId: string, viewerId: string): Promis
   return {
     ...book,
     created_at: created_at.toISOString(),
+    yours: owner_id === viewerId,
     state,
     contact,
     can_undo: state === "collected" && (owner_id === viewerId || reserved_by === viewerId),
@@ -395,10 +402,11 @@ export async function restoreItem(db: Db, itemId: string): Promise<boolean> {
 }
 
 /** Every book, newest first, with whose it is: the admin's view. Still no numbers. */
-export async function listForAdmin(db: Db): Promise<AdminBook[]> {
+export async function listForAdmin(db: Db, adminId: string): Promise<AdminBook[]> {
   const rows = await db
     .select({
       ...shelfColumns,
+      yours: yoursColumn(adminId),
       owner_first_name: profiles.firstName,
       removed_at: items.removedAt,
       removed_reason: items.removedReason,

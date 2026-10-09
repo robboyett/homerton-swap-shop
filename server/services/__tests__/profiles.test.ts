@@ -208,7 +208,7 @@ describe("moderation of people (ADR 0012)", () => {
 
     expect(await signIn(db, "priya@example.com", rob.password)).toBeNull();
     expect(await meById(db, priya.id)).toBeNull();
-    expect((await listShelf(db)).map((b) => b.title)).toEqual(["Rob's book"]);
+    expect((await listShelf(db, admin?.id ?? "")).map((b) => b.title)).toEqual(["Rob's book"]);
     expect((await bookPage(db, robs ?? "", admin?.id ?? ""))?.state).toBe("available");
     const [removed] = await db
       .select()
@@ -224,7 +224,7 @@ describe("moderation of people (ADR 0012)", () => {
     expect(await removeMember(db, priya.id)).toBe(true);
     expect(await restoreMember(db, priya.id)).toBe(true);
     expect((await signIn(db, "priya@example.com", rob.password))?.first_name).toBe("priya");
-    expect((await listShelf(db)).map((b) => b.title)).toEqual(["Rob's book"]);
+    expect((await listShelf(db, admin?.id ?? "")).map((b) => b.title)).toEqual(["Rob's book"]);
   });
 });
 

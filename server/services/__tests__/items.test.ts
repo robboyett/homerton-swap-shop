@@ -230,7 +230,7 @@ describe("what a page may see (docs/data.md, rule 4)", () => {
     await reserve(db, second, asker);
     await collect(db, second, asker);
     const third = await freshItem();
-    const shelf = await listShelf(db);
+    const shelf = await listShelf(db, bystander);
     expect(shelf.map((b) => b.id)).toEqual([third, itemId]);
     for (const book of shelf) {
       expect(Object.keys(book).sort()).toEqual([
@@ -244,6 +244,7 @@ describe("what a page may see (docs/data.md, rule 4)", () => {
         "photo_url",
         "status",
         "title",
+        "yours",
       ]);
     }
   });
@@ -298,7 +299,7 @@ describe("what a page may see (docs/data.md, rule 4)", () => {
 
   it("more in the genre leaves the book itself out", async () => {
     const second = await freshItem();
-    const more = await moreInGenre(db, "picture books", itemId);
+    const more = await moreInGenre(db, "picture books", itemId, bystander);
     expect(more.map((b) => b.id)).toEqual([second]);
   });
 });
@@ -330,7 +331,7 @@ describe("publishing a pile", () => {
     expect(page?.state).toBe("available");
     expect(page?.owner_first_name).toBe("sam");
     expect(page?.cover_url).toContain("covers.openlibrary.org");
-    const shelf = await listShelf(db);
+    const shelf = await listShelf(db, bystander);
     expect(shelf.map((b) => b.title)).toEqual([
       "A typed-in one",
       "The Gruffalo",
@@ -347,13 +348,13 @@ describe("moderation (ADR 0012)", () => {
   it("takes a book off the shelf for everyone, ends its reservation, and keeps the record", async () => {
     await reserve(db, itemId, asker);
     expect(await removeItem(db, itemId, "not a kids' book")).toBe(true);
-    expect(await listShelf(db)).toEqual([]);
+    expect(await listShelf(db, bystander)).toEqual([]);
     expect(await bookPage(db, itemId, asker)).toBeNull();
     expect(await bookPage(db, itemId, owner)).toBeNull();
-    expect(await moreInGenre(db, "picture books", "00000000-0000-4000-8000-000000000000")).toEqual(
-      [],
-    );
-    const [row] = await listForAdmin(db);
+    expect(
+      await moreInGenre(db, "picture books", "00000000-0000-4000-8000-000000000000", bystander),
+    ).toEqual([]);
+    const [row] = await listForAdmin(db, owner);
     expect(row?.status).toBe("removed");
     expect(row?.removed_reason).toBe("not a kids' book");
     expect(row?.owner_first_name).toBe("priya");
@@ -520,5 +521,29 @@ describe("the nav count (ADR 0016)", () => {
     expect(await countAskedOfYou(db, asker)).toBe(0);
     await collect(db, itemId, asker);
     expect(await countAskedOfYou(db, owner)).toBe(0);
+  });
+});
+
+describe("which shelf books are yours (ADR 0017)", () => {
+  it("flags your own and nobody else's, and says nothing about who owns the rest", async () => {
+    await createItems(db, asker, [
+      {
+        isbn: null,
+        title: "Sam's book",
+        author: null,
+        blurb: null,
+        cover_url: null,
+        genre: "picture books",
+        age_band: "0-3",
+      },
+    ]);
+    const forAsker = await listShelf(db, asker);
+    expect(forAsker.map((b) => [b.title, b.yours])).toEqual([
+      ["Sam's book", true],
+      ["The Lighthouse Mouse", false],
+    ]);
+    const forNosy = await listShelf(db, bystander);
+    expect(forNosy.every((b) => b.yours === false)).toBe(true);
+    expect(JSON.stringify(forNosy)).not.toContain("owner");
   });
 });

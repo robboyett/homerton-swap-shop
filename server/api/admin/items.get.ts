@@ -3,6 +3,6 @@ import { db } from "../../services/db/client";
 import { listForAdmin } from "../../services/items";
 
 export default defineEventHandler(async (event) => {
-  await requireAdminId(event);
-  return { books: await listForAdmin(db()) };
+  const adminId = await requireAdminId(event);
+  return { books: await listForAdmin(db(), adminId) };
 });

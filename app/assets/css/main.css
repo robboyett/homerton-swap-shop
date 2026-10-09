@@ -153,13 +153,34 @@ button {
   }
 }
 
-/* The phone board drops the count line: the sections carry their own counts just below. */
+/* Age row over section row (ADR 0017). */
+.filters__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (min-width: 700px) {
+  .filters__rows {
+    gap: 8px;
+  }
+}
+
+/* The count and the "hide mine" toggle. The phone board drops the count line, since the
+   sections carry their own counts just below; the toggle stays. */
 .filters__count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+
+.filters__total {
   display: none;
 }
 
 @media (min-width: 700px) {
-  .filters__count {
+  .filters__total {
     display: inline;
   }
 }

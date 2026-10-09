@@ -36,7 +36,7 @@ This table is closed. Changing a row is a conversation with Rob and an ADR, not 
 | Adding a book | Scan the barcode, look it up, review a pile, publish in one go | The barcode is the only thing that makes giving away twenty books bearable |
 | No barcode | Photograph the cover; a vision model reads title and author, then the same lookup | Rare enough to be the fallback, common enough to need one |
 | A series or collection | One post, a photo, a rough count | Twelve Beast Quest books are one decision, not twelve |
-| Browsing | All covers at once in a grid, sectioned by genre, filtered by age band | Covers are how a parent chooses. Age is the only filter that matters |
+| Browsing | All covers at once in a grid, sectioned by genre, filtered by age band and by section, with one toggle to hide your own | Covers are how a parent chooses. Age matters most; with more books up, a section cut and hiding what you posted yourself earn their two lines of text ([ADR 0017](adr/0017-browse-filters-by-section-and-hides-your-own.md)) |
 | Reserved items | Stay in the grid, faded | Seeing what has gone is part of seeing the shelf |
 | Age bands | 0-3, 4-6, 7-9, 10+ | Matches how people actually talk about kids' books |
 | Look | Deliberately plain. One font, one size. Hierarchy from spacing alone | See [ADR 0003](adr/0003-no-component-kit.md) |

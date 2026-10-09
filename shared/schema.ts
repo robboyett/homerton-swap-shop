@@ -147,18 +147,26 @@ export type NewProfile = z.infer<typeof newProfileSchema>;
  * A book as the shelf shows it. Nothing about who owns it or who has asked for it: the grid
  * needs only the status, to fade it. This is the only item shape a list route may return.
  */
-export const shelfBookSchema = itemSchema.pick({
-  id: true,
-  kind: true,
-  title: true,
-  author: true,
-  genre: true,
-  age_band: true,
-  status: true,
-  cover_url: true,
-  photo_url: true,
-  approx_count: true,
-});
+export const shelfBookSchema = itemSchema
+  .pick({
+    id: true,
+    kind: true,
+    title: true,
+    author: true,
+    genre: true,
+    age_band: true,
+    status: true,
+    cover_url: true,
+    photo_url: true,
+    approx_count: true,
+  })
+  .extend({
+    /**
+     * You own it. A fact about yourself, not about anyone else (ADR 0017). Not to be confused
+     * with the page state "mine", which means you have reserved it.
+     */
+    yours: z.boolean(),
+  });
 
 /**
  * A book as its page shows it to one particular viewer. The projection is rule 4 of

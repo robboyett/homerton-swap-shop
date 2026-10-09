@@ -9,5 +9,5 @@ export default defineEventHandler(async (event) => {
   const id = z.uuid().safeParse(getRouterParam(event, "id"));
   const book = id.success ? await bookPage(db(), id.data, viewerId) : null;
   if (!book) throw createError({ statusCode: 404, statusMessage: "no such book" });
-  return { book, more: await moreInGenre(db(), book.genre, book.id) };
+  return { book, more: await moreInGenre(db(), book.genre, book.id, viewerId) };
 });
