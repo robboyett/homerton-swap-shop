@@ -31,7 +31,7 @@ const good = [
       <div class="explain">
         <h1 class="explain__head">how it works</h1>
         <p class="explain__body">
-          a free swap for homerton. kids' books they have grown out of, passed on to neighbours.
+          a free swap for homerton. kids' books, outgrown and passed on to neighbours.
           nobody pays and nobody sells.
         </p>
       </div>
