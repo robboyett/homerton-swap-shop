@@ -1,8 +1,10 @@
 <script setup lang="ts">
 /**
  * A cover: 2:3 with a 5% spine strip down the left (docs/ui.md). With `labelled`, a slim ink bar
- * with the title and author rises along the foot while a pointer is over it, and only then: the
- * grid stays clean until you ask (Rob, 9 Oct). Touch screens never hover; the tap goes to the page. Real art when the book has
+ * with the title over the author rises along the foot while a pointer is over it, and only then:
+ * the grid stays clean until you ask (Rob, 9 Oct). Covers in the grid are about a hundred pixels
+ * wide, so each line clips rather than wraps; two lines is as tall as "slim" allows. Touch
+ * screens never hover; the tap goes to the page. Real art when the book has
  * any; otherwise one of the canvas's fifty coloured designs, chosen by the book's id
  * (shared/covers.ts). The link around it carries the accessible name, so the image has none.
  */
@@ -16,11 +18,6 @@ const props = defineProps<{
   /** Show the title and author in a slim bar along the foot of the cover while the pointer is over it. */
   labelled?: boolean;
 }>();
-
-/** "title, author", or just the title. One line; the bar clips the rest. */
-const label = computed(() =>
-  props.book.author ? `${props.book.title}, ${props.book.author}` : (props.book.title ?? ""),
-);
 
 const art = computed(() => props.book.photo_url ?? props.book.cover_url);
 const cover = computed(() => coverFor(props.book.id));
@@ -64,6 +61,9 @@ const shapes = computed(() => DESIGNS[cover.value.variant](cover.value.fg));
       <span class="cover__shape" :style="shapes[1]" />
     </template>
     <span class="cover__spine" />
-    <span v-if="labelled && label" class="cover__label" aria-hidden="true">{{ label }}</span>
+    <span v-if="labelled && book.title" class="cover__label" aria-hidden="true">
+      <span class="cover__label-line">{{ book.title }}</span>
+      <span v-if="book.author" class="cover__label-line">{{ book.author }}</span>
+    </span>
   </span>
 </template>

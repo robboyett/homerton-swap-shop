@@ -28,7 +28,7 @@ Covers lead. Everything else is text.
 - Ratio 2:3, radius 2px
 - Shadow `0 1px 1px rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.10)`
 - A 5% dark spine strip down the left: `rgba(0,0,0,0.14)`
-- No text on covers in the grid, until a pointer is over one: then a slim bar along the foot, ink at 88% (`--ink-veil`) with ground text, says the title and author on one line. Hover only; touch screens never see it
+- No text on covers in the grid, until a pointer is over one: then a slim bar along the foot, ink at 88% (`--ink-veil`) with ground text, says the title over the author, each on one line, clipped rather than wrapped. Hover only; touch screens never see it
 - Reserved covers drop to `opacity: 0.35`
 
 ## Grids
